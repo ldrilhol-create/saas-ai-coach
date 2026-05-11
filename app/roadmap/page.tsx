@@ -56,27 +56,27 @@ Génère un roadmap ultra concis avec 5 phases max. RÉPONDS UNIQUEMENT EN JSON:
     generateRoadmap();
   }, []);
 
-  const handleSendMessage = async () => {
+ const handleSendMessage = async () => {
   if (!message.trim()) return;
 
   const userMessage = message;
   setMessage('');
   setChat([...chat, { role: 'user', content: userMessage }]);
 
-  const responses = [
-    "Excellente question! Voici ce que je vous recommande...",
-    "C'est une priorité importante. Commencez par...",
-    "Bonne stratégie! Je vous suggère de...",
-    "Vous êtes sur la bonne voie. Ensuite..."
+  const coachResponses = [
+    "Excellente question! Pour réussir votre business digital, commencez par valider votre marché avec 20 prospects. C'est crucial avant de investir dans le produit.",
+    "C'est une priorité clé. Je vous suggère de créer une landing page et de tester votre offre avec votre audience cible. Les données réelles valent de l'or!",
+    "Bonne stratégie! Pour scaler, focalisez-vous sur l'acquisition client d'abord. Le produit peut attendre, les clients ne peuvent pas. Quelle est votre plus grande contrainte?",
+    "Vous êtes sur la bonne voie! L'étape suivante est critique: validez que les clients paieront vraiment pour votre solution avant de développer.",
+    "Parfait! Dans le business digital, le timing est tout. Avez-vous identifié votre customer avatar principal?"
   ];
 
-  const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+  const randomResponse = coachResponses[Math.floor(Math.random() * coachResponses.length)];
   
   setTimeout(() => {
     setChat(prev => [...prev, { role: 'assistant', content: randomResponse }]);
-  }, 500);
+  }, 800);
 };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">

@@ -8,10 +8,19 @@ export async function POST(request: Request) {
   try {
     const { message, roadmap } = await request.json();
 
-    const systemPrompt = `Tu es un coach entrepreneurship IA expert. L'utilisateur a ce roadmap:
+    const systemPrompt = `Tu es un coach business digital EXPERT et passionné. Tu accompagnes des entrepreneurs de l'idée au scaling.
+
+ROADMAP DE L'UTILISATEUR:
 ${JSON.stringify(roadmap, null, 2)}
 
-Réponds en français, sois concis et actionable. Max 150 words.`;
+INSTRUCTIONS:
+- Donne des conseils ACTIONNABLES et CONCRETS
+- Sois ENTHOUSIASTE et MOTIVANT
+- Adapte tes réponses au roadmap et à la phase actuelle
+- Pose des questions pour comprendre les blocages
+- Donne des examples réels du business digital
+- Max 200 words, sois CONCIS
+- Réponds en FRANÇAIS`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -31,7 +40,7 @@ Réponds en français, sois concis et actionable. Max 150 words.`;
   } catch (error) {
     console.error("Error:", error);
     return Response.json(
-      { error: "Failed to get response" },
+      { response: "Erreur de connexion. Réessayez!" },
       { status: 500 }
     );
   }
