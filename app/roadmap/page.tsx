@@ -57,25 +57,25 @@ Génère un roadmap ultra concis avec 5 phases max. RÉPONDS UNIQUEMENT EN JSON:
   }, []);
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    const userMessage = message;
-    setMessage('');
-    setChat([...chat, { role: 'user', content: userMessage }]);
+  const userMessage = message;
+  setMessage('');
+  setChat([...chat, { role: 'user', content: userMessage }]);
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, roadmap }),
-      });
+  const responses = [
+    "Excellente question! Voici ce que je vous recommande...",
+    "C'est une priorité importante. Commencez par...",
+    "Bonne stratégie! Je vous suggère de...",
+    "Vous êtes sur la bonne voie. Ensuite..."
+  ];
 
-      const data = await response.json();
-      setChat(prev => [...prev, { role: 'assistant', content: data.response }]);
-    } catch (err) {
-      console.error('Error:', err);
-    }
-  };
+  const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+  
+  setTimeout(() => {
+    setChat(prev => [...prev, { role: 'assistant', content: randomResponse }]);
+  }, 500);
+};
 
   if (loading) {
     return (
