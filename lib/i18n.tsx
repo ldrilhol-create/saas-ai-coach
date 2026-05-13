@@ -205,6 +205,28 @@ const translations = {
         'Un compte existe déjà avec cette adresse e-mail (ou une variante : alias avec +, points sur Gmail, etc.). Connecte-toi plutôt.',
       errorDisposableEmail:
         'Les adresses e-mail jetables ne sont pas acceptées. Utilise une adresse permanente (Gmail, Outlook, ProtonMail, etc.).',
+      forgotPassword: 'Mot de passe oublié ?',
+      resetTitle: 'Réinitialiser ton mot de passe',
+      resetSubtitle: 'Entre ton adresse e-mail. On t\'envoie un lien pour choisir un nouveau mot de passe.',
+      resetBtn: 'Envoyer le lien',
+      resetEmailSent:
+        'C\'est envoyé ! Vérifie ta boîte mail (et les spams). Le lien expire dans 1 heure.',
+      backToSignin: 'Retour à la connexion',
+    },
+    resetPassword: {
+      title: 'Choisis ton nouveau mot de passe',
+      subtitle: 'Entre un mot de passe d\'au moins 6 caractères. Tu pourras te connecter avec dès maintenant.',
+      newPasswordLabel: 'Nouveau mot de passe',
+      confirmPasswordLabel: 'Confirme le mot de passe',
+      passwordPlaceholder: 'Au moins 6 caractères',
+      submitBtn: 'Mettre à jour le mot de passe',
+      success: 'Mot de passe mis à jour. Redirection vers ton coach...',
+      errorTooShort: 'Le mot de passe doit faire au moins 6 caractères.',
+      errorMismatch: 'Les deux mots de passe ne correspondent pas.',
+      invalidLinkTitle: 'Lien invalide ou expiré',
+      invalidLinkBody:
+        'Ce lien de réinitialisation n\'est plus valide. Il a peut-être expiré (1h max) ou déjà été utilisé. Tu peux en redemander un depuis la page de connexion.',
+      backToLogin: 'Retour à la connexion',
     },
     quiz: {
       eyebrow: 'Diagnostic business',
@@ -483,6 +505,27 @@ const translations = {
         'An account already exists with this email (or a variant: + aliases, Gmail dots, etc.). Sign in instead.',
       errorDisposableEmail:
         'Disposable email addresses are not accepted. Use a permanent address (Gmail, Outlook, ProtonMail, etc.).',
+      forgotPassword: 'Forgot password?',
+      resetTitle: 'Reset your password',
+      resetSubtitle: "Enter your email. We'll send you a link to choose a new password.",
+      resetBtn: 'Send link',
+      resetEmailSent: "Sent! Check your inbox (and spam). The link expires in 1 hour.",
+      backToSignin: 'Back to sign in',
+    },
+    resetPassword: {
+      title: 'Choose your new password',
+      subtitle: 'Enter a password with at least 6 characters. You can use it to sign in right away.',
+      newPasswordLabel: 'New password',
+      confirmPasswordLabel: 'Confirm password',
+      passwordPlaceholder: 'At least 6 characters',
+      submitBtn: 'Update password',
+      success: 'Password updated. Redirecting to your coach...',
+      errorTooShort: 'Password must be at least 6 characters.',
+      errorMismatch: 'Both passwords must match.',
+      invalidLinkTitle: 'Invalid or expired link',
+      invalidLinkBody:
+        "This reset link is no longer valid. It may have expired (1h max) or already been used. You can request a new one from the login page.",
+      backToLogin: 'Back to login',
     },
     quiz: {
       eyebrow: 'Business diagnostic',

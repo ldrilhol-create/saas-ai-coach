@@ -11,7 +11,7 @@ function LoginInner() {
   const next = searchParams.get('next') || '/roadmap';
   const { t } = useLang();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,8 @@ function LoginInner() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    if (!email.trim()) return;
+    if (mode !== 'reset' && !password) return;
     setLoading(true);
     setError(null);
     setInfo(null);
@@ -36,6 +37,18 @@ function LoginInner() {
           setLoading(false);
           return;
         }
+      } else if (mode === 'reset') {
+        // Send reset password email. The redirectTo lands the user on
+        // /reset-password where they choose a new password (session is
+        // attached to the link).
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${origin}/reset-password`,
+        });
+        if (resetError) throw resetError;
+        setInfo(t.login.resetEmailSent);
+        setLoading(false);
+        return;
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
@@ -91,10 +104,18 @@ function LoginInner() {
 
         <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-3xl p-8 backdrop-blur-sm shadow-2xl shadow-blue-600/5">
           <h1 className="text-2xl font-bold mb-2 tracking-tight">
-            {mode === 'signin' ? t.login.signinTitle : t.login.signupTitle}
+            {mode === 'signin'
+              ? t.login.signinTitle
+              : mode === 'signup'
+                ? t.login.signupTitle
+                : t.login.resetTitle}
           </h1>
           <p className="text-gray-400 text-sm mb-6">
-            {mode === 'signin' ? t.login.signinSubtitle : t.login.signupSubtitle}
+            {mode === 'signin'
+              ? t.login.signinSubtitle
+              : mode === 'signup'
+                ? t.login.signupSubtitle
+                : t.login.resetSubtitle}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -111,20 +132,33 @@ function LoginInner() {
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400 focus:bg-white/[0.07] transition-all"
               />
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm text-gray-300 mb-1.5 font-medium">{t.login.passwordLabel}</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                placeholder={t.login.passwordPlaceholder}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400 focus:bg-white/[0.07] transition-all"
-              />
-            </div>
+            {mode !== 'reset' && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="password" className="block text-sm text-gray-300 font-medium">{t.login.passwordLabel}</label>
+                  {mode === 'signin' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('reset'); setError(null); setInfo(null); setPassword(''); }}
+                      className="text-xs text-indigo-300 hover:text-indigo-200 font-medium transition-colors"
+                    >
+                      {t.login.forgotPassword}
+                    </button>
+                  )}
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                  placeholder={t.login.passwordPlaceholder}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400 focus:bg-white/[0.07] transition-all"
+                />
+              </div>
+            )}
 
             {error && (
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
@@ -142,12 +176,18 @@ function LoginInner() {
               disabled={loading}
               className="w-full py-3.5 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 hover:from-indigo-400 hover:to-blue-600 font-bold shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] active:scale-100 disabled:opacity-50 disabled:hover:scale-100"
             >
-              {loading ? t.login.loading : mode === 'signin' ? t.login.signinBtn : t.login.signupBtn}
+              {loading
+                ? t.login.loading
+                : mode === 'signin'
+                  ? t.login.signinBtn
+                  : mode === 'signup'
+                    ? t.login.signupBtn
+                    : t.login.resetBtn}
             </button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-white/5 text-center text-sm text-gray-400">
-            {mode === 'signin' ? (
+            {mode === 'signin' && (
               <>
                 {t.login.switchToSignup}{' '}
                 <button
@@ -157,7 +197,8 @@ function LoginInner() {
                   {t.login.switchToSignupLink}
                 </button>
               </>
-            ) : (
+            )}
+            {mode === 'signup' && (
               <>
                 {t.login.switchToSignin}{' '}
                 <button
@@ -167,6 +208,14 @@ function LoginInner() {
                   {t.login.switchToSigninLink}
                 </button>
               </>
+            )}
+            {mode === 'reset' && (
+              <button
+                onClick={() => { setMode('signin'); setError(null); setInfo(null); }}
+                className="text-indigo-300 hover:text-indigo-200 font-medium transition-colors"
+              >
+                ← {t.login.backToSignin}
+              </button>
             )}
           </div>
         </div>
