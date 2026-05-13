@@ -381,9 +381,13 @@ exception when unique_violation then
 end;
 $$;
 
+-- AFTER INSERT (not BEFORE): the trigger inserts into normalized_emails with a FK
+-- to auth.users.id, which only exists after the parent INSERT completes. If the
+-- trigger raises, the entire transaction rolls back, so the auth.users row is
+-- undone too — safe equivalent to BEFORE INSERT semantically.
 drop trigger if exists on_auth_user_created_normalize on auth.users;
 create trigger on_auth_user_created_normalize
-  before insert on auth.users
+  after insert on auth.users
   for each row execute function public.enforce_one_account_per_person();
 
 -- Backfill: insert normalized form for all existing users (idempotent).
