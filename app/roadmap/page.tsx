@@ -34,6 +34,7 @@ type LimitHit = {
 };
 
 const ERROR_SENTINEL = '\n__ERROR__';
+const LAST_USER_STORAGE_KEY = 'lastSeenUserId';
 const taskKey = (phaseIdx: number, taskIdx: number) => `${phaseIdx}-${taskIdx}`;
 
 export default function RoadmapPage() {
@@ -278,6 +279,21 @@ export default function RoadmapPage() {
       setUserEmail(user.email ?? null);
       setAuthChecked(true);
       refreshUsage();
+
+      // If a different user signed in (account switch in the same browser),
+      // wipe localStorage so the new user doesn't inherit the previous user's
+      // quiz answers (which would auto-trigger a roadmap generation with the
+      // wrong data) or active project id.
+      try {
+        const lastUserId = localStorage.getItem(LAST_USER_STORAGE_KEY);
+        if (lastUserId && lastUserId !== user.id) {
+          localStorage.removeItem('quizAnswers');
+          localStorage.removeItem(ACTIVE_ROADMAP_STORAGE_KEY);
+        }
+        localStorage.setItem(LAST_USER_STORAGE_KEY, user.id);
+      } catch {
+        // ignore — localStorage might be unavailable in private mode
+      }
 
       const shouldRegenerate =
         typeof window !== 'undefined' &&
