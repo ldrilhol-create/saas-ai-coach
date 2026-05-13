@@ -35,35 +35,26 @@ export default function MentionsLegalesPage() {
             </a>
             , est édité par&nbsp;:
           </p>
-          <p className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mt-3 text-amber-100 text-sm">
-            <strong>[À COMPLÉTER avant la mise en ligne publique]</strong>
+          <p className="mt-3">
+            • <strong>Nom</strong> : Léo Drilhol
             <br />
-            • Nom / Raison sociale : <em>[Léo Drilhol — ou raison sociale de l&apos;entreprise]</em>
+            • <strong>Forme juridique</strong> : personne physique exerçant en activité
+            indépendante non inscrite au Registre du Commerce (chiffre d&apos;affaires inférieur au
+            seuil légal d&apos;inscription de CHF 100 000)
             <br />
-            • Forme juridique : <em>[Personne physique / Entreprise individuelle / Sàrl / SA / etc.]</em>
+            • <strong>Adresse</strong> : Route de Provence 20, canton de Vaud, Suisse
             <br />
-            • Adresse du siège : <em>[Rue, NPA et localité en Suisse]</em>
-            <br />
-            • Canton : <em>[Genève, Vaud, Valais, etc.]</em>
-            <br />
-            • Numéro IDE (si inscrit au Registre du Commerce) : <em>[CHE-XXX.XXX.XXX]</em>
-            <br />
-            • Numéro de TVA (si assujetti, &gt; CHF 100 000 de CA annuel) : <em>[CHE-XXX.XXX.XXX TVA]</em>
-            <br />
-            • Adresse e-mail de contact : <em>[contact@ton-domaine.com]</em>
-          </p>
-          <p className="text-sm text-gray-400 mt-3">
-            Une entreprise individuelle suisse n&apos;est tenue de s&apos;inscrire au Registre du
-            Commerce qu&apos;à partir d&apos;un chiffre d&apos;affaires annuel de CHF 100 000. En
-            dessous, l&apos;inscription est facultative mais possible.
+            • <strong>E-mail de contact</strong> :{' '}
+            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
+              buisnesscoach@gmail.com
+            </a>
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold mb-3 text-white">2. Responsable du contenu</h2>
           <p>
-            <strong>[À COMPLÉTER : Nom Prénom du responsable]</strong>, en qualité de{' '}
-            <em>[Propriétaire / Administrateur / Gérant]</em>.
+            <strong>Léo Drilhol</strong>, en qualité de propriétaire et exploitant du service.
           </p>
         </section>
 
@@ -116,8 +107,8 @@ export default function MentionsLegalesPage() {
           <h2 className="text-xl font-bold mb-3 text-white">5. Propriété intellectuelle</h2>
           <p>
             L&apos;ensemble des éléments du service (textes, graphismes, logo, interface, code
-            source, base de données) sont la propriété exclusive de{' '}
-            <em>[Nom de l&apos;éditeur]</em>, sauf mentions contraires. Toute reproduction,
+            source, base de données) sont la propriété exclusive de Léo Drilhol, sauf mentions
+            contraires. Toute reproduction,
             représentation ou exploitation, totale ou partielle, sans autorisation écrite préalable
             est interdite et constituerait une infraction sanctionnée par la Loi fédérale sur le
             droit d&apos;auteur et les droits voisins (LDA, RS 231.1).
@@ -132,17 +123,20 @@ export default function MentionsLegalesPage() {
           <h2 className="text-xl font-bold mb-3 text-white">6. Contact</h2>
           <p>
             Pour toute question relative à ces mentions légales ou au service, vous pouvez nous
-            écrire à&nbsp;: <em>[contact@ton-domaine.com]</em>.
+            écrire à&nbsp;:{' '}
+            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
+              buisnesscoach@gmail.com
+            </a>
+            .
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold mb-3 text-white">7. Droit applicable et for</h2>
           <p>
-            Les présentes mentions légales sont soumises au droit suisse. Pour tout litige relatif à
-            ces mentions, les tribunaux du canton de <em>[À COMPLÉTER : Genève / Vaud / etc.]</em>{' '}
-            sont seuls compétents, sous réserve des dispositions impératives de protection des
-            consommateurs.
+            Les présentes mentions légales sont soumises au droit suisse. Pour tout litige relatif
+            à ces mentions, les tribunaux du canton de Vaud sont seuls compétents, sous réserve des
+            dispositions impératives de protection des consommateurs.
           </p>
         </section>
 

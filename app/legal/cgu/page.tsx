@@ -36,8 +36,8 @@ export default function CGUPage() {
             Les présentes Conditions Générales d&apos;Utilisation et de Vente (ci-après « CGU/CGV »)
             régissent l&apos;accès et l&apos;utilisation du service{' '}
             <strong>AI Business Coach</strong> (ci-après « le Service »), édité par{' '}
-            <em>[À COMPLÉTER : Nom / Raison sociale]</em>, domicilié en Suisse (ci-après
-            « l&apos;Éditeur »).
+            <strong>Léo Drilhol</strong>, personne physique exerçant en activité indépendante,
+            domicilié à Route de Provence 20, canton de Vaud, Suisse (ci-après « l&apos;Éditeur »).
           </p>
           <p className="mt-3">
             Le Service est une application en ligne de coaching business propulsée par
@@ -140,8 +140,8 @@ export default function CGUPage() {
           </p>
           <p className="mt-3">
             Le paiement est effectué par carte bancaire via notre prestataire de paiement{' '}
-            <em>[À COMPLÉTER : Stripe / Lemon Squeezy]</em>, qui assure la sécurité des transactions
-            conformément aux standards PCI-DSS. L&apos;Éditeur ne stocke aucune donnée de carte
+            <strong>Stripe</strong>, qui assure la sécurité des transactions conformément aux
+            standards PCI-DSS. L&apos;Éditeur ne stocke aucune donnée de carte
             bancaire sur ses serveurs.
           </p>
           <p className="mt-3">
@@ -178,9 +178,12 @@ export default function CGUPage() {
           <h2 className="text-xl font-bold mb-3 text-white">Article 7 — Résiliation</h2>
           <p>
             L&apos;Utilisateur peut résilier son abonnement à tout moment, sans préavis ni frais,
-            depuis la page « Mon compte » ou en écrivant à <em>[contact@ton-domaine.com]</em>. La
-            résiliation prend effet à la fin de la période de facturation en cours&nbsp;: aucun
-            remboursement pro-rata n&apos;est effectué.
+            depuis la page « Mon compte » ou en écrivant à{' '}
+            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
+              buisnesscoach@gmail.com
+            </a>
+            . La résiliation prend effet à la fin de la période de facturation en cours&nbsp;:
+            aucun remboursement pro-rata n&apos;est effectué.
           </p>
           <p className="mt-3">
             L&apos;Éditeur peut résilier le compte d&apos;un Utilisateur en cas de violation grave
@@ -269,9 +272,8 @@ export default function CGUPage() {
           <p>
             Les présentes CGU/CGV sont régies par le droit suisse, à l&apos;exclusion de toute règle
             de conflit de lois. Le for exclusif est fixé au siège de l&apos;Éditeur, dans le canton
-            de <em>[À COMPLÉTER : Genève / Vaud / Valais / etc.]</em>, sous réserve des dispositions
-            impératives de protection des consommateurs en faveur de l&apos;Utilisateur (art. 32
-            CPC, art. 17 Convention de Lugano).
+            de Vaud, sous réserve des dispositions impératives de protection des consommateurs en
+            faveur de l&apos;Utilisateur (art. 32 CPC, art. 17 Convention de Lugano).
           </p>
           <p className="mt-3 text-sm text-gray-400">
             Pour les Utilisateurs résidant dans l&apos;Union européenne, les règles de protection

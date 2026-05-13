@@ -34,14 +34,15 @@ export default function ConfidentialitePage() {
             Le responsable du traitement de vos données personnelles dans le cadre du service{' '}
             <strong>AI Business Coach</strong> est&nbsp;:
           </p>
-          <p className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mt-3 text-amber-100 text-sm">
-            <strong>[À COMPLÉTER]</strong>
+          <p className="mt-3">
+            • <strong>Léo Drilhol</strong>, personne physique exerçant en activité indépendante
             <br />
-            • <em>[Nom / Raison sociale]</em>
+            • Route de Provence 20, canton de Vaud, Suisse
             <br />
-            • <em>[Adresse complète en Suisse]</em>
-            <br />
-            • Contact protection des données : <em>[contact@ton-domaine.com]</em>
+            • Contact protection des données :{' '}
+            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
+              buisnesscoach@gmail.com
+            </a>
           </p>
           <p className="mt-3 text-sm text-gray-400">
             La présente politique est rédigée selon la Loi fédérale suisse sur la protection des
@@ -222,8 +223,7 @@ export default function ConfidentialitePage() {
 
             <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4">
               <p>
-                <strong>[Prestataire de paiement — à compléter : Stripe ou Lemon Squeezy]</strong> —
-                Traitement des paiements et facturation.
+                <strong>Stripe, Inc.</strong> — Traitement des paiements et facturation.
               </p>
               <p className="text-sm text-gray-400 mt-1">
                 Les données de paiement (carte bancaire) sont collectées directement par ce
@@ -298,9 +298,12 @@ export default function ConfidentialitePage() {
             </li>
           </ul>
           <p className="mt-3">
-            Pour exercer ces droits, écrivez à <em>[contact@ton-domaine.com]</em> avec une copie
-            d&apos;une pièce d&apos;identité si nécessaire. Nous répondons dans un délai maximum de
-            30 jours.
+            Pour exercer ces droits, écrivez à{' '}
+            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
+              buisnesscoach@gmail.com
+            </a>{' '}
+            avec une copie d&apos;une pièce d&apos;identité si nécessaire. Nous répondons dans un
+            délai maximum de 30 jours.
           </p>
 
           <h3 className="font-bold mt-5 mb-2 text-white">6.1 Réclamation auprès d&apos;une autorité</h3>
@@ -382,7 +385,11 @@ export default function ConfidentialitePage() {
           <h2 className="text-xl font-bold mb-3 text-white">10. Contact</h2>
           <p>
             Pour toute question relative à la présente politique ou au traitement de vos données,
-            contactez-nous à&nbsp;: <em>[contact@ton-domaine.com]</em>.
+            contactez-nous à&nbsp;:{' '}
+            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
+              buisnesscoach@gmail.com
+            </a>
+            .
           </p>
           <p className="mt-3 text-sm text-gray-400">
             Voir aussi&nbsp;:{' '}
