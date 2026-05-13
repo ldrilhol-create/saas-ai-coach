@@ -8,9 +8,11 @@ Document de passation pour reprendre le projet dans une nouvelle session Claude 
 
 **SaaS bilingue (FR/EN)** : un coach business propulsé par Claude IA qui génère une roadmap personnalisée à partir d'un diagnostic en 6 questions, puis suit l'utilisateur via un chat avec mémoire et auto-complétion des tâches.
 
-**URL de prod** : https://buisness-ia-coach.vercel.app
-**Repo local** : `~/Desktop/saas-ai-coach-master/`
-**Repo GitHub déclaré (pas synchronisé en local)** : https://github.com/ldrilhol-create/saas-ai-coach
+**URL de prod** : https://saas-ai-coach.vercel.app
+**Repo local** : `~/Desktop/saas-ai-coach-master/` *(initialisé en git, synchronisé avec GitHub)*
+**Repo GitHub** : https://github.com/ldrilhol-create/saas-ai-coach (branche `main`)
+**Auteur** : Léo Drilhol (Suisse) — droit suisse applicable, juridiction du canton de résidence
+*(L'ancien projet Vercel `buisness-ia-coach.vercel.app` a été supprimé le 2026-05-13 pour éviter toute confusion.)*
 
 ---
 
@@ -327,9 +329,9 @@ Marge mensuelle worst-case (quota max atteint) :
 
 Si après quelques semaines de prod la marge réelle diffère significativement, ajuster les quotas dans [lib/rate-limit.ts](lib/rate-limit.ts).
 
-### Branchement Stripe — état actuel
+### Branchement Stripe — ✅ FONCTIONNEL en mode TEST
 
-**Côté code** : tout est implémenté.
+**Côté code** :
 - `lib/stripe/client.ts` — SDK Stripe (lazy)
 - `lib/stripe/plans.ts` — mapping `tier ↔ STRIPE_PRICE_ID_*`
 - `lib/supabase/admin.ts` — client Supabase service role pour les writes du webhook
@@ -337,7 +339,36 @@ Si après quelques semaines de prod la marge réelle diffère significativement,
 - Boutons pricing cards (landing) → POST `/api/stripe/checkout`
 - Bouton "Gérer mon abonnement" (`/account`) → POST `/api/stripe/portal`
 
-**Côté Stripe Dashboard** : à faire (cf section "Setup Stripe" plus bas).
+**Côté Stripe Dashboard (test mode)** :
+- Compte Stripe créé (Gmail business)
+- 3 produits + prices récurrents EUR/mois (`price_1TWJIr…` Starter / `price_1TWJeH…` Pro / `price_1TWJer…` Premium)
+- Webhook endpoint configuré sur `https://saas-ai-coach.vercel.app/api/stripe/webhook` avec les 5 events :
+  - `checkout.session.completed`
+  - `customer.subscription.created`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
+  - `invoice.payment_succeeded`
+- Customer Portal activé (changement de plan + annulation + update CB + factures)
+
+**Test bout-en-bout validé** : paiement avec carte `4242 4242 4242 4242` → checkout réussit → webhook reçu (200) → DB mise à jour → `/account` affiche le nouveau tier → "Gérer mon abonnement" ouvre le Customer Portal.
+
+### Passer en mode LIVE (vrais paiements)
+
+Quand l'utilisateur est prêt à recevoir de vraies cartes bancaires :
+
+1. **Activer le compte Stripe en mode production** :
+   - Compléter les infos KYC (identité, adresse, activité)
+   - Renseigner un IBAN suisse pour les payouts
+   - Stripe valide ça en quelques jours (parfois immédiat)
+2. **Recréer les 3 produits + prices en mode LIVE** — Stripe sépare strictement test et live, ce n'est pas portable. Nouveaux price IDs à récupérer.
+3. **Créer un webhook endpoint en mode LIVE** sur la même URL avec les mêmes 5 events. Nouveau `whsec_*`.
+4. **Mettre à jour les env vars sur Vercel** (Production + Preview) :
+   - `STRIPE_SECRET_KEY=sk_live_…` (au lieu de `sk_test_`)
+   - `STRIPE_PRICE_ID_STARTER/PRO/PREMIUM` avec les nouveaux IDs live
+   - `STRIPE_WEBHOOK_SECRET=whsec_…` du webhook live
+5. **Redéployer**.
+
+Garder les clés test en parallèle est possible — mais sur Vercel l'env var est unique par environnement. La doc et le code ne dépendent que des noms d'env var, pas des valeurs.
 
 ### Variables d'environnement Stripe
 À ajouter dans `.env.local` ET dans Vercel (Production + Preview) :
@@ -358,7 +389,7 @@ Le `SUPABASE_SERVICE_ROLE_KEY` est trouvable dans Supabase → Project Settings 
 
 1. **Tables** : `chat_messages`, `roadmaps`, `task_completions` créées avec RLS (cf `schema.sql`)
 2. **Email confirmation** : **désactivé** (Authentication → Providers → Email → Confirm email OFF) — pour permettre signup direct sans configurer SMTP
-3. **URL Configuration** : Site URL = `https://buisness-ia-coach.vercel.app`, Redirect URLs inclut `https://buisness-ia-coach.vercel.app/**`
+3. **URL Configuration** : Site URL = `https://saas-ai-coach.vercel.app`, Redirect URLs inclut `https://saas-ai-coach.vercel.app/**`
 
 **Avant de passer en prod publique réelle**, il faudra :
 - Réactiver "Confirm email"
@@ -439,7 +470,7 @@ Le `SUPABASE_SERVICE_ROLE_KEY` est trouvable dans Supabase → Project Settings 
 
 ### Critique avant un vrai launch
 
-1. **Système d'abonnement** — ✅ code Stripe complet (checkout + portal + webhook). **Reste à faire côté Stripe Dashboard** : créer le compte, créer les 3 Products + Prices récurrents, configurer le webhook endpoint, et renseigner les env vars (cf section "Branchement Stripe").
+1. ~~**Système d'abonnement**~~ — ✅ **Stripe branché bout-en-bout en mode TEST**. Le user peut souscrire avec une carte test, le webhook met à jour `user_subscriptions`, le Customer Portal marche. **Reste à passer en mode LIVE** (cf section "Passer en mode LIVE").
 2. ~~**Rate limiting par user**~~ — ✅ fait. `free` = 10 msg + 1 roadmap / mois, `pro` = illimité. Limites configurables dans `lib/rate-limit.ts`.
 3. **SMTP + email confirmation** — Resend gratuit + réactiver Confirm email sur Supabase
 4. ~~**Pages légales**~~ — ✅ scaffolding fait (Mentions, CGU/CGV, Confidentialité). Reste à **compléter les placeholders** `[À COMPLÉTER]` (nom légal, adresse, SIRET, TVA, email de contact réel) et à les faire **relire par un avocat/juriste** avant de prendre le premier paiement.
@@ -453,7 +484,7 @@ Le `SUPABASE_SERVICE_ROLE_KEY` est trouvable dans Supabase → Project Settings 
 
 ### Tech debt
 
-9. **Initialiser git** dans le dossier local et le sync avec GitHub
+9. ~~**Initialiser git**~~ — ✅ fait. Dépôt local lié à `https://github.com/ldrilhol-create/saas-ai-coach`, branche `main`. Auth via Personal Access Token GitHub (saved dans le trousseau macOS). Vercel auto-deploy sur chaque push.
 10. **Tests E2E** (Playwright) sur les flows critiques
 11. **Monitoring** (Sentry, Vercel Analytics) pour voir les erreurs en prod
 12. **Migration vers Stripe** si Lemon Squeezy devient trop cher au volume
@@ -474,8 +505,10 @@ Le `SUPABASE_SERVICE_ROLE_KEY` est trouvable dans Supabase → Project Settings 
 
 - Compte **Anthropic Console** : pour rotation de la clé API si compromise
 - Compte **Supabase** : projet `ifnksbvgzzcebzlvrmzf`, dashboard pour gérer auth, tables, RLS
-- Compte **Vercel** : projet `buisness-ia-coach` sous `ldrilhol-creates-projects`, plan Pro actif
+- Compte **Vercel** : projet **`saas-ai-coach`** sous `ldrilhol-create's projects`, plan Pro actif. Auto-deploy depuis GitHub `main`.
+- Compte **Stripe** : créé en mode test. Test mode = `sk_test_*` et 3 prices `price_1TWJ*`. Webhook actif sur `saas-ai-coach.vercel.app/api/stripe/webhook`. Live mode pas encore activé (KYC à compléter).
+- Compte **GitHub** : `ldrilhol-create` propriétaire du repo `saas-ai-coach`. Personal Access Token saved dans trousseau macOS.
 
 ---
 
-**Date de cet handoff** : 2026-05-12 (mis à jour : rate limiting + tiers d'abonnement scaffold)
+**Date de cet handoff** : 2026-05-13 (mis à jour : Stripe branché bout-en-bout en mode test, git initialisé, palette passée au bleu profond, pages légales suisses)
