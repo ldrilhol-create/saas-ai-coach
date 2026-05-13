@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -11,6 +11,17 @@ export default function Home() {
   const router = useRouter();
   const { t } = useLang();
   const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled) setIsAuthenticated(!!user);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const goToApp = () => router.push('/roadmap');
 
@@ -70,10 +81,10 @@ export default function Home() {
               {t.nav.subscribe}
             </a>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push(isAuthenticated ? '/roadmap' : '/login')}
               className="text-sm font-medium text-white px-5 py-2.5 rounded-full bg-white/[0.06] border border-blue-500/50 shadow-[0_0_15px_-3px_rgba(37,99,235,0.3)] hover:bg-blue-600/15 hover:border-blue-400 hover:shadow-[0_0_25px_-3px_rgba(37,99,235,0.6)] transition-all"
             >
-              {t.nav.login}
+              {isAuthenticated ? t.nav.myProjects : t.nav.login}
             </button>
           </div>
         </div>

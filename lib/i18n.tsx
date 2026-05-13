@@ -9,6 +9,7 @@ const translations = {
     nav: {
       login: 'Connexion',
       subscribe: "S'abonner",
+      myProjects: 'Mes projets',
     },
     account: {
       title: 'Mon compte',
@@ -292,6 +293,7 @@ const translations = {
     nav: {
       login: 'Sign in',
       subscribe: 'Subscribe',
+      myProjects: 'My projects',
     },
     account: {
       title: 'My account',
