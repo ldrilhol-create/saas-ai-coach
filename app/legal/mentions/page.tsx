@@ -30,8 +30,8 @@ export default function MentionsLegalesPage() {
           <h2 className="text-xl font-bold mb-3 text-white">1. Éditeur du service</h2>
           <p>
             Le service <strong>AI Business Coach</strong>, accessible à l&apos;adresse{' '}
-            <a href="https://buisness-ia-coach.vercel.app" className="text-indigo-300 underline">
-              https://buisness-ia-coach.vercel.app
+            <a href="https://saas-ai-coach.vercel.app" className="text-indigo-300 underline">
+              https://saas-ai-coach.vercel.app
             </a>
             , est édité par&nbsp;:
           </p>
