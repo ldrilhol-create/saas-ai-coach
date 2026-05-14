@@ -45,8 +45,8 @@ export default function MentionsLegalesPage() {
             • <strong>Adresse</strong> : Route de Provence 20, canton de Vaud, Suisse
             <br />
             • <strong>E-mail de contact</strong> :{' '}
-            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
-              buisnesscoach@gmail.com
+            <a href="mailto:buisnesscoachia@gmail.com" className="text-indigo-300 underline">
+              buisnesscoachia@gmail.com
             </a>
           </p>
         </section>
@@ -124,8 +124,8 @@ export default function MentionsLegalesPage() {
           <p>
             Pour toute question relative à ces mentions légales ou au service, vous pouvez nous
             écrire à&nbsp;:{' '}
-            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
-              buisnesscoach@gmail.com
+            <a href="mailto:buisnesscoachia@gmail.com" className="text-indigo-300 underline">
+              buisnesscoachia@gmail.com
             </a>
             .
           </p>

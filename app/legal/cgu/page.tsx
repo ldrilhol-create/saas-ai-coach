@@ -179,8 +179,8 @@ export default function CGUPage() {
           <p>
             L&apos;Utilisateur peut résilier son abonnement à tout moment, sans préavis ni frais,
             depuis la page « Mon compte » ou en écrivant à{' '}
-            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
-              buisnesscoach@gmail.com
+            <a href="mailto:buisnesscoachia@gmail.com" className="text-indigo-300 underline">
+              buisnesscoachia@gmail.com
             </a>
             . La résiliation prend effet à la fin de la période de facturation en cours&nbsp;:
             aucun remboursement pro-rata n&apos;est effectué.

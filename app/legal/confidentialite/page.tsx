@@ -40,8 +40,8 @@ export default function ConfidentialitePage() {
             • Route de Provence 20, canton de Vaud, Suisse
             <br />
             • Contact protection des données :{' '}
-            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
-              buisnesscoach@gmail.com
+            <a href="mailto:buisnesscoachia@gmail.com" className="text-indigo-300 underline">
+              buisnesscoachia@gmail.com
             </a>
           </p>
           <p className="mt-3 text-sm text-gray-400">
@@ -299,8 +299,8 @@ export default function ConfidentialitePage() {
           </ul>
           <p className="mt-3">
             Pour exercer ces droits, écrivez à{' '}
-            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
-              buisnesscoach@gmail.com
+            <a href="mailto:buisnesscoachia@gmail.com" className="text-indigo-300 underline">
+              buisnesscoachia@gmail.com
             </a>{' '}
             avec une copie d&apos;une pièce d&apos;identité si nécessaire. Nous répondons dans un
             délai maximum de 30 jours.
@@ -386,8 +386,8 @@ export default function ConfidentialitePage() {
           <p>
             Pour toute question relative à la présente politique ou au traitement de vos données,
             contactez-nous à&nbsp;:{' '}
-            <a href="mailto:buisnesscoach@gmail.com" className="text-indigo-300 underline">
-              buisnesscoach@gmail.com
+            <a href="mailto:buisnesscoachia@gmail.com" className="text-indigo-300 underline">
+              buisnesscoachia@gmail.com
             </a>
             .
           </p>

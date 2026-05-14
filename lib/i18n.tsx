@@ -39,7 +39,7 @@ const translations = {
       noteCategoryContext: 'Contexte',
       prioritySupportTitle: 'Support prioritaire',
       prioritySupportBody: 'En tant que membre Premium, tes demandes passent en priorité. Écris-nous à',
-      prioritySupportEmail: 'buisnesscoach@gmail.com',
+      prioritySupportEmail: 'buisnesscoachia@gmail.com',
       prioritySupportSla: 'Réponse sous 24h ouvrées garantie.',
     },
     pdfExport: {
@@ -345,7 +345,7 @@ const translations = {
       noteCategoryContext: 'Context',
       prioritySupportTitle: 'Priority support',
       prioritySupportBody: 'As a Premium member, your requests get prioritized. Email us at',
-      prioritySupportEmail: 'buisnesscoach@gmail.com',
+      prioritySupportEmail: 'buisnesscoachia@gmail.com',
       prioritySupportSla: 'Guaranteed response within 24 business hours.',
     },
     pdfExport: {
