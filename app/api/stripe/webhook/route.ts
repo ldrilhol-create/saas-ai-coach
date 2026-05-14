@@ -51,6 +51,14 @@ export async function POST(request: Request) {
         await handleInvoicePaymentSucceeded(invoice);
         break;
       }
+      case 'charge.refunded': {
+        // A full refund cancels the linked subscription, which then fires
+        // customer.subscription.deleted and downgrades the user via the
+        // existing handler. Partial refunds are ignored on purpose.
+        const charge = event.data.object as Stripe.Charge;
+        await handleChargeRefunded(charge);
+        break;
+      }
       default:
         // Unhandled event — log for visibility.
         console.log('Unhandled Stripe event type:', event.type);
@@ -113,6 +121,34 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       },
       { onConflict: 'user_id' }
     );
+}
+
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  if (charge.amount_refunded < charge.amount) return; // partial refund: leave subscription alone
+
+  // `invoice` is on the Charge in older API shapes; cast through unknown.
+  const invoiceRef =
+    (charge as unknown as { invoice?: string | { id: string } }).invoice;
+  if (!invoiceRef) return; // not a subscription charge
+  const invoiceId = typeof invoiceRef === 'string' ? invoiceRef : invoiceRef.id;
+
+  const stripe = getStripeClient();
+  const invoice = await stripe.invoices.retrieve(invoiceId);
+  const subscriptionRef =
+    (invoice as unknown as { subscription?: string | { id: string } }).subscription;
+  if (!subscriptionRef) return;
+  const subscriptionId =
+    typeof subscriptionRef === 'string' ? subscriptionRef : subscriptionRef.id;
+
+  // Cancelling here fires customer.subscription.deleted, which downgrades the
+  // user to 'trial' via handleSubscriptionDeleted.
+  try {
+    await stripe.subscriptions.cancel(subscriptionId);
+  } catch (err) {
+    // Already cancelled is fine; anything else is a real error.
+    const message = err instanceof Error ? err.message : String(err);
+    if (!/no such subscription|already canceled/i.test(message)) throw err;
+  }
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
