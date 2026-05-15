@@ -215,6 +215,26 @@ export default function AccountPage() {
           </section>
         )}
 
+        {/* Change plan — primary CTA card. Visible quel que soit le tier
+            (trial users qui upgradent, payants qui veulent monter en gamme). */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-blue-500/[0.08] to-indigo-500/[0.04] border border-blue-500/30 rounded-3xl p-6 md:p-8 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="min-w-0 flex-1">
+              <p className="text-base md:text-lg font-bold mb-1">{t.account.changePlanCta}</p>
+              <p className="text-sm text-gray-400">{t.account.changePlanSubtitle}</p>
+            </div>
+            <button
+              onClick={() => router.push('/upgrade')}
+              className="group flex-shrink-0 px-5 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 font-semibold text-sm text-white shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] flex items-center gap-2"
+            >
+              {t.account.changePlanCta}
+              <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
+        </section>
+
         {usage?.tier === 'premium' && (
           <section className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-sm">
             <div className="flex items-baseline justify-between gap-3 mb-1 flex-wrap">

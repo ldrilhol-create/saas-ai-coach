@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { parse, Allow } from 'partial-json';
+import posthog from 'posthog-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { CoachAvatar } from '@/app/components/CoachAvatar';
 import { UserAvatar } from '@/app/components/UserAvatar';
@@ -258,6 +259,8 @@ export default function RoadmapPage() {
       // Refresh the list so the new roadmap shows up in the switcher with its
       // final (Claude-generated) title.
       await refreshRoadmapsList();
+      // Funnel milestone — user reached their first "aha" moment.
+      posthog.capture('roadmap_generated');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -377,6 +380,12 @@ export default function RoadmapPage() {
     if (!message.trim() || sending) return;
     const userMessage = message;
     const historyBeforeNew = chat;
+    // Track the first message of a fresh chat as a separate event — this
+    // is the activation moment in the funnel.
+    if (chat.length === 0) {
+      posthog.capture('chat_first_message');
+    }
+    posthog.capture('chat_message_sent', { history_length: chat.length });
     setMessage('');
     setChat((prev) => [
       ...prev,

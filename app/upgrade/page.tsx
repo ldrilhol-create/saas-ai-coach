@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import posthog from 'posthog-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 import { UserAvatar } from '@/app/components/UserAvatar';
@@ -38,6 +39,7 @@ export default function UpgradePage() {
   const subscribe = async (plan: PaidPlan) => {
     if (checkoutLoading) return;
     setCheckoutLoading(plan);
+    posthog.capture('checkout_started', { plan, source: 'upgrade_page' });
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',

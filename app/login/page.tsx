@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import posthog from 'posthog-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 
@@ -32,6 +33,12 @@ function LoginInner() {
       if (mode === 'signup') {
         const { error: signUpError, data } = await supabase.auth.signUp({ email, password });
         if (signUpError) throw signUpError;
+        // Track signup completion in PostHog (identifies the user so we can
+        // tie future events back to this account across sessions).
+        if (data.user) {
+          posthog.identify(data.user.id, { email });
+          posthog.capture('signup_completed');
+        }
         if (!data.session) {
           setInfo(t.login.confirmEmail);
           setLoading(false);
@@ -50,8 +57,12 @@ function LoginInner() {
         setLoading(false);
         return;
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
+        // Identify the user in PostHog so subsequent events tie back to them.
+        if (data.user) {
+          posthog.identify(data.user.id, { email });
+        }
       }
       router.push(next);
       router.refresh();

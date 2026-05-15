@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import posthog from 'posthog-js';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
@@ -32,6 +33,9 @@ export default function Home() {
   const subscribe = async (plan: PaidPlan) => {
     if (checkoutLoading) return;
     setCheckoutLoading(plan);
+    // Track the intention before we even check auth — this captures all
+    // pricing clicks whether or not the user converts.
+    posthog.capture('checkout_started', { plan, source: 'landing_pricing' });
     try {
       const supabase = createSupabaseBrowserClient();
       const { data: { user } } = await supabase.auth.getUser();

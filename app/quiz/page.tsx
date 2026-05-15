@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import posthog from 'posthog-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 
@@ -57,6 +58,9 @@ export default function Quiz() {
 
   const handleSubmit = () => {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
+    // Capture the funnel milestone — drop-off between this event and
+    // 'roadmap_generated' tells us if the generation step is the bottleneck.
+    posthog.capture('quiz_completed');
     router.push('/roadmap?regenerate=1');
   };
 
