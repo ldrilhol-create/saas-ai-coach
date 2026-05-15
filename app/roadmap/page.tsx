@@ -967,7 +967,7 @@ export default function RoadmapPage() {
               type="button"
               onClick={() => {
                 setLimitHit(null);
-                router.push('/#pricing');
+                router.push('/upgrade');
               }}
               className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 hover:from-indigo-400 hover:to-blue-600 font-bold text-[15px] shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02]"
             >
@@ -996,7 +996,7 @@ export default function RoadmapPage() {
               type="button"
               onClick={() => {
                 setPdfLocked(false);
-                router.push('/#pricing');
+                router.push('/upgrade');
               }}
               className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 hover:from-indigo-400 hover:to-blue-600 font-bold text-[15px] shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02]"
             >
