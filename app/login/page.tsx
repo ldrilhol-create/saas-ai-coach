@@ -35,7 +35,8 @@ function LoginInner() {
         if (signUpError) throw signUpError;
         // Track signup completion in PostHog (identifies the user so we can
         // tie future events back to this account across sessions).
-        if (data.user) {
+        // The __loaded guard avoids a silent no-op if the SDK hasn't booted yet.
+        if (data.user && posthog.__loaded) {
           posthog.identify(data.user.id, { email });
           posthog.capture('signup_completed');
         }
@@ -60,7 +61,7 @@ function LoginInner() {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
         // Identify the user in PostHog so subsequent events tie back to them.
-        if (data.user) {
+        if (data.user && posthog.__loaded) {
           posthog.identify(data.user.id, { email });
         }
       }

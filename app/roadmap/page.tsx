@@ -905,7 +905,11 @@ export default function RoadmapPage() {
                 </div>
               )}
               {chat.map((msg, idx) => (
-                <div key={idx} className={msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+                // data-private masque le contenu dans les session recordings
+                // PostHog. Les messages coach et user peuvent contenir des
+                // infos business sensibles — on les blur pour préserver la
+                // confidentialité tout en gardant le funnel observable.
+                <div key={idx} data-private className={msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
                   <span
                     className={`inline-block px-4 py-3 rounded-2xl text-[15px] leading-relaxed max-w-[88%] whitespace-pre-wrap ${
                       msg.role === 'user'
