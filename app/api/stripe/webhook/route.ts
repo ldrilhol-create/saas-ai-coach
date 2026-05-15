@@ -59,6 +59,21 @@ export async function POST(request: Request) {
         await handleChargeRefunded(charge);
         break;
       }
+      case 'invoice.payment_failed': {
+        // Card declined on renewal. Stripe's smart retry policy handles
+        // dunning automatically (3 retries over ~3 weeks). We only log here
+        // so we can monitor failure rates; downgrade is left to
+        // customer.subscription.deleted once Stripe gives up.
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscriptionRef =
+          (invoice as unknown as { subscription?: string | { id: string } }).subscription;
+        const subscriptionId =
+          typeof subscriptionRef === 'string' ? subscriptionRef : subscriptionRef?.id;
+        console.warn(
+          `Stripe payment failed: invoice=${invoice.id} subscription=${subscriptionId ?? 'n/a'} amount=${invoice.amount_due}`
+        );
+        break;
+      }
       default:
         // Unhandled event — log for visibility.
         console.log('Unhandled Stripe event type:', event.type);

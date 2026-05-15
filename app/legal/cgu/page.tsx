@@ -102,7 +102,7 @@ export default function CGUPage() {
           </p>
           <div className="mt-3 space-y-2 text-sm">
             <p>
-              🎁 <strong>Essai gratuit</strong> — 0 €, durée 7 jours, 10 messages, 1 roadmap. Aucune
+              🎁 <strong>Essai gratuit</strong> — 0 €, durée 7 jours, 5 messages, 1 roadmap. Aucune
               carte bancaire requise. Conversion automatique en compte expiré au terme des 7 jours
               ou à épuisement du quota (premier des deux).
             </p>
@@ -114,7 +114,7 @@ export default function CGUPage() {
               PDF, multi-projets.
             </p>
             <p>
-              👑 <strong>Plan Premium</strong> — 69 € / mois, 800 messages, 20 roadmaps / mois,
+              👑 <strong>Plan Premium</strong> — 69 € / mois, 600 messages, 20 roadmaps / mois,
               mémoire durable du coach, support prioritaire.
             </p>
           </div>

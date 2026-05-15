@@ -15,10 +15,10 @@ export type EffectiveTier = {
 };
 
 export const TIER_LIMITS: Record<Tier, TierLimits> = {
-  trial:   { messagesPerMonth: 10,  roadmapsPerMonth: 1 },
+  trial:   { messagesPerMonth: 5,   roadmapsPerMonth: 1 },
   starter: { messagesPerMonth: 60,  roadmapsPerMonth: 3 },
   pro:     { messagesPerMonth: 300, roadmapsPerMonth: 10 },
-  premium: { messagesPerMonth: 800, roadmapsPerMonth: 20 },
+  premium: { messagesPerMonth: 600, roadmapsPerMonth: 20 },
 };
 
 // Model mapping — Sonnet on Trial/Starter (cheap acquisition + entry volume),
