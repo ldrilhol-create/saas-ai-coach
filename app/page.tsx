@@ -225,27 +225,32 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="pricing" className="relative z-10 px-6 py-20 md:py-28 border-t border-white/5 scroll-mt-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">{t.pricing.eyebrow}</span>
-            <h2 className="text-4xl md:text-5xl font-bold mt-3 mb-4 tracking-tight">{t.pricing.title}</h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">{t.pricing.subtitle}</p>
+      <section id="pricing" className="relative z-10 px-6 py-24 md:py-32 border-t border-white/5 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-16 md:mb-20 max-w-2xl mx-auto">
+            <span className="text-sm font-semibold text-blue-400 uppercase tracking-[0.2em]">{t.pricing.eyebrow}</span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mt-4 mb-5 tracking-tight">{t.pricing.title}</h2>
+            <p className="text-gray-400 text-base md:text-lg">{t.pricing.subtitle}</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 items-stretch">
+          {/* Cards */}
+          <div className="grid md:grid-cols-3 gap-5 md:gap-6 lg:gap-7 items-stretch">
             {/* Starter */}
-            <div className="relative p-7 rounded-3xl bg-white/[0.03] border-2 border-white/10 backdrop-blur-sm hover:border-white/20 transition-all flex flex-col">
-              <div className="mb-1 text-sm font-semibold text-indigo-300 uppercase tracking-wider">{t.pricing.starterName}</div>
-              <p className="text-gray-400 text-sm mb-5">{t.pricing.starterTagline}</p>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-bold">{t.pricing.starterPrice}€</span>
-                <span className="text-gray-400 text-sm">{t.pricing.perMonth}</span>
+            <div className="group relative p-8 md:p-9 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition-all duration-300 flex flex-col">
+              <div className="mb-2 text-xs font-semibold text-gray-400 uppercase tracking-[0.15em]">{t.pricing.starterName}</div>
+              <p className="text-gray-500 text-sm mb-8 min-h-[2.5rem]">{t.pricing.starterTagline}</p>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="text-6xl font-bold tracking-tight">{t.pricing.starterPrice}€</span>
+                <span className="text-gray-500 text-sm">{t.pricing.perMonth}</span>
               </div>
-              <ul className="space-y-3 mb-7 flex-1">
+              <div className="h-px bg-white/10 my-7" />
+              <ul className="space-y-3.5 mb-8 flex-1">
                 {[t.pricing.starterF1, t.pricing.starterF2, t.pricing.starterF3, t.pricing.starterF4, t.pricing.starterF5, t.pricing.starterF6].map((f, i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-gray-300">
-                    <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                  <li key={i} className="flex gap-3 text-[15px] text-gray-300 leading-relaxed">
+                    <svg className="w-4 h-4 mt-1 flex-shrink-0 text-gray-500" viewBox="0 0 16 16" fill="none">
+                      <path d="M3.5 8.5L6.5 11.5L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -253,27 +258,30 @@ export default function Home() {
               <button
                 onClick={() => subscribe('starter')}
                 disabled={checkoutLoading !== null}
-                className="w-full px-5 py-3 rounded-full bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/25 font-medium text-sm transition-all disabled:opacity-50"
+                className="w-full px-5 py-3 rounded-xl bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/25 font-medium text-sm transition-all disabled:opacity-50"
               >
                 {checkoutLoading === 'starter' ? '…' : t.pricing.ctaStarter}
               </button>
             </div>
 
-            {/* Pro (mis en avant) */}
-            <div className="relative p-7 rounded-3xl bg-gradient-to-br from-indigo-500/[0.08] to-blue-600/[0.08] border-2 border-blue-500 shadow-[0_0_50px_-5px_rgba(37,99,235,0.5)] backdrop-blur-sm flex flex-col md:scale-[1.03]">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 text-xs font-bold shadow-lg shadow-blue-600/40">
+            {/* Pro (mis en avant — border lumineuse subtile) */}
+            <div className="group relative p-8 md:p-9 rounded-2xl bg-gradient-to-b from-blue-500/[0.04] to-transparent border border-blue-500/40 transition-all duration-300 flex flex-col shadow-[0_0_0_1px_rgba(59,130,246,0.15),0_20px_60px_-15px_rgba(59,130,246,0.25)]">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-500 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
                 {t.pricing.mostPopular}
               </div>
-              <div className="mb-1 text-sm font-semibold text-blue-400 uppercase tracking-wider">{t.pricing.proName}</div>
-              <p className="text-gray-400 text-sm mb-5">{t.pricing.proTagline}</p>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-bold bg-gradient-to-r from-indigo-400 via-blue-500 to-blue-700 bg-clip-text text-transparent">{t.pricing.proPrice}€</span>
+              <div className="mb-2 text-xs font-semibold text-blue-400 uppercase tracking-[0.15em]">{t.pricing.proName}</div>
+              <p className="text-gray-400 text-sm mb-8 min-h-[2.5rem]">{t.pricing.proTagline}</p>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="text-6xl font-bold tracking-tight text-white">{t.pricing.proPrice}€</span>
                 <span className="text-gray-400 text-sm">{t.pricing.perMonth}</span>
               </div>
-              <ul className="space-y-3 mb-7 flex-1">
+              <div className="h-px bg-blue-500/20 my-7" />
+              <ul className="space-y-3.5 mb-8 flex-1">
                 {[t.pricing.proF1, t.pricing.proF2, t.pricing.proF3, t.pricing.proF4, t.pricing.proF5, t.pricing.proF6].map((f, i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-gray-200">
-                    <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                  <li key={i} className="flex gap-3 text-[15px] text-gray-200 leading-relaxed">
+                    <svg className="w-4 h-4 mt-1 flex-shrink-0 text-blue-400" viewBox="0 0 16 16" fill="none">
+                      <path d="M3.5 8.5L6.5 11.5L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -281,24 +289,27 @@ export default function Home() {
               <button
                 onClick={() => subscribe('pro')}
                 disabled={checkoutLoading !== null}
-                className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 hover:from-indigo-400 hover:to-blue-600 font-bold text-sm shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+                className="w-full px-5 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 font-semibold text-sm text-white transition-all disabled:opacity-50"
               >
                 {checkoutLoading === 'pro' ? '…' : t.pricing.ctaPro}
               </button>
             </div>
 
             {/* Premium */}
-            <div className="relative p-7 rounded-3xl bg-white/[0.03] border-2 border-white/10 backdrop-blur-sm hover:border-white/20 transition-all flex flex-col">
-              <div className="mb-1 text-sm font-semibold text-amber-300 uppercase tracking-wider">{t.pricing.premiumName}</div>
-              <p className="text-gray-400 text-sm mb-5">{t.pricing.premiumTagline}</p>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-bold">{t.pricing.premiumPrice}€</span>
-                <span className="text-gray-400 text-sm">{t.pricing.perMonth}</span>
+            <div className="group relative p-8 md:p-9 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-amber-400/30 transition-all duration-300 flex flex-col">
+              <div className="mb-2 text-xs font-semibold text-amber-300 uppercase tracking-[0.15em]">{t.pricing.premiumName}</div>
+              <p className="text-gray-500 text-sm mb-8 min-h-[2.5rem]">{t.pricing.premiumTagline}</p>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="text-6xl font-bold tracking-tight">{t.pricing.premiumPrice}€</span>
+                <span className="text-gray-500 text-sm">{t.pricing.perMonth}</span>
               </div>
-              <ul className="space-y-3 mb-7 flex-1">
+              <div className="h-px bg-white/10 my-7" />
+              <ul className="space-y-3.5 mb-8 flex-1">
                 {[t.pricing.premiumF1, t.pricing.premiumF2, t.pricing.premiumF3, t.pricing.premiumF4, t.pricing.premiumF5, t.pricing.premiumF6, t.pricing.premiumF7, t.pricing.premiumF8].map((f, i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-gray-300">
-                    <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                  <li key={i} className="flex gap-3 text-[15px] text-gray-300 leading-relaxed">
+                    <svg className="w-4 h-4 mt-1 flex-shrink-0 text-amber-300/80" viewBox="0 0 16 16" fill="none">
+                      <path d="M3.5 8.5L6.5 11.5L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -306,14 +317,32 @@ export default function Home() {
               <button
                 onClick={() => subscribe('premium')}
                 disabled={checkoutLoading !== null}
-                className="w-full px-5 py-3 rounded-full bg-white/5 border border-amber-400/50 hover:bg-amber-500/10 hover:border-amber-300 font-medium text-sm transition-all disabled:opacity-50"
+                className="w-full px-5 py-3 rounded-xl bg-white/5 border border-amber-400/40 hover:bg-amber-500/10 hover:border-amber-300 font-medium text-sm transition-all disabled:opacity-50"
               >
                 {checkoutLoading === 'premium' ? '…' : t.pricing.ctaPremium}
               </button>
             </div>
           </div>
 
-          <p className="text-center text-sm text-gray-500 mt-8">{t.pricing.trialNote}</p>
+          {/* Trial note */}
+          <p className="text-center text-sm text-gray-500 mt-12">{t.pricing.trialNote}</p>
+
+          {/* Trust signals — "Tous les plans incluent" */}
+          <div className="mt-16 pt-12 border-t border-white/5">
+            <div className="text-center mb-7">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-[0.2em]">{t.pricing.includesTitle}</span>
+            </div>
+            <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 text-sm text-gray-400">
+              {[t.pricing.trustCancel, t.pricing.trustNoCommit, t.pricing.trustData, t.pricing.trustSupport].map((trust, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-400/80" viewBox="0 0 16 16" fill="none">
+                    <path d="M3.5 8.5L6.5 11.5L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span>{trust}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
