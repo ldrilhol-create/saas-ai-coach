@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { parse, Allow } from 'partial-json';
 import posthog from 'posthog-js';
@@ -553,14 +552,9 @@ export default function RoadmapPage() {
       <header className="relative z-30 border-b border-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2.5 min-w-0">
-            <Image
-              src="/logo_icon_square.svg"
-              alt="Business Coach AI"
-              width={36}
-              height={36}
-              priority
-              className="h-9 w-9 flex-shrink-0"
-            />
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/30 flex-shrink-0">
+              AI
+            </div>
             <span className="font-bold text-lg tracking-tight hidden md:inline">{t.roadmap.headerTitle}</span>
 
             {roadmaps.length > 0 && (

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
@@ -74,14 +73,12 @@ export default function ResetPasswordPage() {
 
       <div className="relative w-full max-w-md z-10">
         <div className="flex justify-center mb-8">
-          <Image
-            src="/logo_horizontal_compact.svg"
-            alt="Business Coach AI"
-            width={220}
-            height={55}
-            priority
-            className="h-12 w-auto"
-          />
+          <div className="flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/30">
+              AI
+            </div>
+            <span className="font-bold text-xl tracking-tight">Business Coach</span>
+          </div>
         </div>
 
         <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-3xl p-8 backdrop-blur-sm shadow-2xl shadow-blue-600/5">
