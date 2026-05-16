@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
@@ -70,12 +71,26 @@ export default function Home() {
 
       <nav className="relative z-10 px-6 py-5">
         <div className="max-w-6xl mx-auto flex justify-between items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/30">
-              AI
-            </div>
-            <span className="font-bold text-lg tracking-tight">Business Coach</span>
-          </div>
+          <button onClick={() => router.push('/')} className="flex items-center gap-2.5" aria-label="Business Coach AI">
+            {/* Mobile : icône seule */}
+            <Image
+              src="/logo_icon_square.svg"
+              alt="Business Coach AI"
+              width={40}
+              height={40}
+              priority
+              className="sm:hidden h-9 w-9"
+            />
+            {/* Desktop : logo horizontal compact (icône + nom intégrés) */}
+            <Image
+              src="/logo_horizontal_compact.svg"
+              alt="Business Coach AI"
+              width={200}
+              height={50}
+              priority
+              className="hidden sm:block h-10 w-auto"
+            />
+          </button>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <a

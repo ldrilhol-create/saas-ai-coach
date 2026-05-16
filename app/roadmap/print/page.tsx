@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLang } from '@/lib/i18n';
@@ -152,9 +153,13 @@ function PrintPageInner() {
       <main className="max-w-3xl mx-auto px-8 py-10 print:px-0 print:py-0">
         <header className="flex items-start justify-between gap-4 pb-6 border-b-2 border-gray-200 mb-8">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-white text-sm">
-              AI
-            </div>
+            <Image
+              src="/logo_icon_square.svg"
+              alt="Business Coach AI"
+              width={40}
+              height={40}
+              className="h-10 w-10"
+            />
             <div>
               <p className="font-bold text-gray-900 text-base leading-tight">AI Business Coach</p>
               <p className="text-xs text-gray-500">{t.footer.poweredBy}</p>

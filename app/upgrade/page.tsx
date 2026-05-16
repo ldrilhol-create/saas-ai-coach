@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -79,15 +80,25 @@ export default function UpgradePage() {
           {/* Logo */}
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-2.5 group"
+            className="flex items-center"
             aria-label="Accueil"
           >
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/30">
-              AI
-            </div>
-            <span className="font-bold tracking-tight text-base hidden sm:inline group-hover:text-blue-300 transition-colors">
-              Business Coach
-            </span>
+            <Image
+              src="/logo_icon_square.svg"
+              alt="Business Coach AI"
+              width={40}
+              height={40}
+              priority
+              className="sm:hidden h-9 w-9"
+            />
+            <Image
+              src="/logo_horizontal_compact.svg"
+              alt="Business Coach AI"
+              width={200}
+              height={50}
+              priority
+              className="hidden sm:block h-10 w-auto"
+            />
           </button>
 
           {/* Nav buttons */}
