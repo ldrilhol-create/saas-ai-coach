@@ -68,25 +68,28 @@ export default function Home() {
         <div className="absolute bottom-0 -left-32 h-[400px] w-[600px] rounded-full bg-gradient-to-br from-blue-600/15 to-indigo-500/20 blur-3xl" />
       </div>
 
-      <nav className="relative z-10 px-6 py-5">
-        <div className="max-w-6xl mx-auto flex justify-between items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/30">
+      <nav className="relative z-10 px-4 sm:px-6 py-5">
+        <div className="max-w-6xl mx-auto flex justify-between items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-800 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-600/30 flex-shrink-0">
               AI
             </div>
-            <span className="font-bold text-lg tracking-tight">Business Coach</span>
+            {/* Texte caché sur très petits écrans pour laisser de la place aux boutons */}
+            <span className="font-bold text-lg tracking-tight hidden sm:inline">Business Coach</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <LanguageSwitcher />
+            {/* "S'abonner" est un raccourci vers #pricing — caché sur mobile, l'user peut scroller */}
             <a
               href="#pricing"
-              className="text-sm font-medium text-white px-5 py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 hover:from-indigo-400 hover:to-blue-600 shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/45 transition-all"
+              className="hidden sm:inline-flex text-sm font-medium text-white px-5 py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-blue-700 hover:from-indigo-400 hover:to-blue-600 shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/45 transition-all"
             >
               {t.nav.subscribe}
             </a>
+            {/* Connexion / Mes projets : priorité absolue, toujours visible, padding réduit sur mobile */}
             <button
               onClick={() => router.push(isAuthenticated ? '/roadmap' : '/login')}
-              className="text-sm font-medium text-white px-5 py-2.5 rounded-full bg-white/[0.06] border border-blue-500/50 shadow-[0_0_15px_-3px_rgba(37,99,235,0.3)] hover:bg-blue-600/15 hover:border-blue-400 hover:shadow-[0_0_25px_-3px_rgba(37,99,235,0.6)] transition-all"
+              className="text-sm font-medium text-white px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/[0.06] border border-blue-500/50 shadow-[0_0_15px_-3px_rgba(37,99,235,0.3)] hover:bg-blue-600/15 hover:border-blue-400 hover:shadow-[0_0_25px_-3px_rgba(37,99,235,0.6)] transition-all whitespace-nowrap"
             >
               {isAuthenticated ? t.nav.myProjects : t.nav.login}
             </button>
