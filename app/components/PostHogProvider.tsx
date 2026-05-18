@@ -13,7 +13,12 @@ function PostHogInit() {
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key || posthog.__loaded) return;
     posthog.init(key, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.posthog.com',
+      // Reverse proxy via /ingest — see next.config.ts. Bypasses ad blockers
+      // that would otherwise drop ~30-50% of our traffic data.
+      api_host: '/ingest',
+      // PostHog still needs to know where its "real" host lives so the
+      // SDK can build absolute URLs for assets like recordings.
+      ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.posthog.com',
       // Auto-capture every click / change / submit on every element. The
       // killer feature — saves us from instrumenting each button by hand.
       autocapture: true,
