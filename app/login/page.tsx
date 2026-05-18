@@ -40,6 +40,16 @@ function LoginInner() {
           posthog.identify(data.user.id, { email });
           posthog.capture('signup_completed');
         }
+        // Fire-and-forget welcome email. Requires a session (server-side
+        // auth.getUser() check in the route), so only attempt when one exists.
+        // Failure is non-blocking: signup itself already succeeded.
+        if (data.session) {
+          fetch('/api/emails/welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ locale: t.login.signinTitle.includes('Bon retour') ? 'fr' : 'en' }),
+          }).catch(() => { /* non-fatal */ });
+        }
         if (!data.session) {
           setInfo(t.login.confirmEmail);
           setLoading(false);
