@@ -17,8 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://businesscoachai.app"),
   title: "AI Business Coach",
   description: "Lance ton business avec un coach IA qui te suit pas à pas.",
+  // PWA manifest (icons + theme color when the site is installed on mobile).
+  // The favicon / app icon / apple icon are auto-detected by Next.js from
+  // app/favicon.ico, app/icon.png, app/apple-icon.png — no need to declare here.
+  manifest: "/site.webmanifest",
+  themeColor: "#0a0118",
 };
 
 export default function RootLayout({
