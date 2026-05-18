@@ -121,7 +121,7 @@ const translations = {
       premiumF8: 'Accès anticipé aux nouvelles features',
     },
     hero: {
-      badge: 'Propulsé par Claude IA',
+      badge: 'Propulsé par une IA de pointe',
       title1: 'Lance ton business avec un',
       titleAccent: 'coach IA',
       title2: 'qui te suit pas à pas',
@@ -192,7 +192,7 @@ const translations = {
     },
     footer: {
       copy: '© 2026 AI Business Coach',
-      poweredBy: 'Propulsé par Claude IA',
+      poweredBy: 'Propulsé par une IA de pointe',
       mentions: 'Mentions légales',
       cgu: 'CGU/CGV',
       privacy: 'Confidentialité',
@@ -441,7 +441,7 @@ const translations = {
       premiumF8: 'Early access to new features',
     },
     hero: {
-      badge: 'Powered by Claude AI',
+      badge: 'Powered by cutting-edge AI',
       title1: 'Launch your business with an',
       titleAccent: 'AI coach',
       title2: 'guiding you every step',
@@ -506,7 +506,7 @@ const translations = {
     },
     footer: {
       copy: '© 2026 AI Business Coach',
-      poweredBy: 'Powered by Claude AI',
+      poweredBy: 'Powered by cutting-edge AI',
       mentions: 'Legal notice',
       cgu: 'Terms',
       privacy: 'Privacy',
