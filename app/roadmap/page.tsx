@@ -62,6 +62,16 @@ export default function RoadmapPage() {
   const [limitHit, setLimitHit] = useState<LimitHit | null>(null);
   const [pdfLocked, setPdfLocked] = useState(false);
 
+  // "Refine my roadmap" modal — lets a user evolve their roadmap based on
+  // what they've learned since the original quiz, without burning a quota
+  // slot. The 3 fields mirror /api/roadmap/refine.
+  const [refineOpen, setRefineOpen] = useState(false);
+  const [refineQ1, setRefineQ1] = useState('');
+  const [refineQ2, setRefineQ2] = useState('');
+  const [refineQ3, setRefineQ3] = useState('');
+  const [refineSubmitting, setRefineSubmitting] = useState(false);
+  const [refineError, setRefineError] = useState<string | null>(null);
+
   const [roadmaps, setRoadmaps] = useState<RoadmapMeta[]>([]);
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -515,6 +525,94 @@ export default function RoadmapPage() {
     router.push('/quiz');
   };
 
+  // Refine the current roadmap based on the user's evolution. Streams the new
+  // version into the existing roadmap row (no new project, no quota cost).
+  const handleRefineSubmit = async () => {
+    if (refineSubmitting) return;
+    const changes = refineQ1.trim();
+    const currentIdea = refineQ2.trim();
+    const blocker = refineQ3.trim();
+    if (!changes && !currentIdea && !blocker) {
+      setRefineError(t.roadmap.refineErrorEmpty);
+      return;
+    }
+    if (!activeRoadmapId) {
+      setRefineError('No active roadmap');
+      return;
+    }
+
+    setRefineError(null);
+    setRefineSubmitting(true);
+    // Close the modal early so the user sees the streaming roadmap appear
+    // in real time underneath (better UX than a long modal spinner).
+    setRefineOpen(false);
+    setStreaming(true);
+    setRoadmap(null);
+    setCompletions(new Set());
+
+    try {
+      if (posthog.__loaded) {
+        posthog.capture('roadmap_refined', {
+          has_changes: !!changes,
+          has_idea: !!currentIdea,
+          has_blocker: !!blocker,
+        });
+      }
+
+      const res = await fetch('/api/roadmap/refine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roadmapId: activeRoadmapId,
+          changes,
+          currentIdea,
+          blocker,
+          locale,
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const errIdx = buffer.indexOf(ERROR_SENTINEL);
+        if (errIdx >= 0) {
+          throw new Error(buffer.slice(errIdx + ERROR_SENTINEL.length).trim() || 'Stream error');
+        }
+
+        try {
+          const partial = parse(buffer, Allow.ALL) as Roadmap;
+          if (partial && typeof partial === 'object') {
+            setRoadmap(partial);
+          }
+        } catch {
+          // not enough tokens yet
+        }
+      }
+
+      // Reset local form fields for next time + refresh the projects list
+      // so the (possibly renamed) roadmap shows the new title in the switcher.
+      setRefineQ1('');
+      setRefineQ2('');
+      setRefineQ3('');
+      await refreshRoadmapsList();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setStreaming(false);
+      setRefineSubmitting(false);
+    }
+  };
+
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-[#0a0118] flex items-center justify-center">
@@ -685,7 +783,20 @@ export default function RoadmapPage() {
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute top-full right-0 mt-2 z-30 w-56 bg-gradient-to-br from-[#1a0b2e] to-[#0a0118] border border-white/10 rounded-2xl shadow-2xl shadow-blue-600/20 backdrop-blur-sm p-1.5">
+                  <div className="absolute top-full right-0 mt-2 z-30 w-60 bg-gradient-to-br from-[#1a0b2e] to-[#0a0118] border border-white/10 rounded-2xl shadow-2xl shadow-blue-600/20 backdrop-blur-sm p-1.5">
+                    {/* Primary action — refine. Most users will pick this rather
+                        than fully regenerating. Highlighted with a blue accent. */}
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); setRefineOpen(true); }}
+                      disabled={streaming || !activeRoadmapId}
+                      className="w-full text-left text-sm px-3 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-colors flex items-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed mb-1"
+                    >
+                      <svg className="w-4 h-4 text-blue-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <span className="font-semibold">{t.roadmap.refineButton}</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => { setMenuOpen(false); handleRegenerate(); }}
@@ -1015,6 +1126,110 @@ export default function RoadmapPage() {
             >
               {t.roadmap.upgradeCta}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* "Mettre à jour ma roadmap" modal — user evolves their roadmap based
+          on what they've learned. Submits to /api/roadmap/refine which
+          streams a refreshed roadmap into the same row (no quota cost). */}
+      {refineOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-lg bg-gradient-to-br from-[#1a0b2e] to-[#0a0118] border border-blue-500/30 rounded-3xl p-7 shadow-2xl shadow-blue-600/20 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => {
+                if (refineSubmitting) return;
+                setRefineOpen(false);
+                setRefineError(null);
+              }}
+              aria-label="Close"
+              className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <div className="h-12 w-12 mb-4 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-blue-700 flex items-center justify-center text-2xl shadow-lg shadow-blue-600/30">
+              ✨
+            </div>
+            <h2 className="text-xl font-bold mb-2">{t.roadmap.refineModalTitle}</h2>
+            <p className="text-sm text-gray-400 mb-5 leading-relaxed">{t.roadmap.refineModalSubtitle}</p>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="refine-q1" className="block text-sm font-medium text-gray-200 mb-1.5">
+                  {t.roadmap.refineQ1Label}
+                </label>
+                <textarea
+                  id="refine-q1"
+                  value={refineQ1}
+                  onChange={(e) => setRefineQ1(e.target.value)}
+                  placeholder={t.roadmap.refineQ1Placeholder}
+                  maxLength={1000}
+                  rows={3}
+                  className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-400 focus:bg-white/[0.07] transition-all resize-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="refine-q2" className="block text-sm font-medium text-gray-200 mb-1.5">
+                  {t.roadmap.refineQ2Label}
+                </label>
+                <input
+                  id="refine-q2"
+                  type="text"
+                  value={refineQ2}
+                  onChange={(e) => setRefineQ2(e.target.value)}
+                  placeholder={t.roadmap.refineQ2Placeholder}
+                  maxLength={500}
+                  className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-400 focus:bg-white/[0.07] transition-all"
+                />
+              </div>
+              <div>
+                <label htmlFor="refine-q3" className="block text-sm font-medium text-gray-200 mb-1.5">
+                  {t.roadmap.refineQ3Label}
+                </label>
+                <textarea
+                  id="refine-q3"
+                  value={refineQ3}
+                  onChange={(e) => setRefineQ3(e.target.value)}
+                  placeholder={t.roadmap.refineQ3Placeholder}
+                  maxLength={1000}
+                  rows={3}
+                  className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-400 focus:bg-white/[0.07] transition-all resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 p-3.5 rounded-xl bg-amber-500/[0.08] border border-amber-500/30 text-amber-100 text-xs leading-relaxed">
+              {t.roadmap.refineWarning}
+            </div>
+
+            {refineError && (
+              <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-200 text-sm">
+                {refineError}
+              </div>
+            )}
+
+            <div className="mt-6 flex gap-3 flex-col-reverse sm:flex-row">
+              <button
+                type="button"
+                onClick={() => {
+                  if (refineSubmitting) return;
+                  setRefineOpen(false);
+                  setRefineError(null);
+                }}
+                disabled={refineSubmitting}
+                className="flex-1 px-5 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 font-medium text-sm transition-all disabled:opacity-40"
+              >
+                {t.roadmap.refineCancel}
+              </button>
+              <button
+                type="button"
+                onClick={handleRefineSubmit}
+                disabled={refineSubmitting}
+                className="flex-1 px-5 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 font-bold text-sm text-white shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+              >
+                {refineSubmitting ? t.roadmap.refineSubmitLoading : t.roadmap.refineSubmit}
+              </button>
+            </div>
           </div>
         </div>
       )}
