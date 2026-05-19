@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { getEffectiveTier, REFINE_LIMITS } from '@/lib/rate-limit';
 
 export const maxDuration = 60;
 export const runtime = 'nodejs';
@@ -96,7 +97,50 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Roadmap not found' }, { status: 404 });
   }
 
-  const originalAnswers = (existing.quiz_answers ?? {}) as QuizAnswers;
+  const originalAnswers = (existing.quiz_answers ?? {}) as QuizAnswers & {
+    refined_history?: string[];
+  };
+
+  // ------------------------------------------------------------
+  // Quota check — count refines across ALL the user's roadmaps in
+  // the current calendar month. Stored as a jsonb array of ISO
+  // timestamps in each roadmap's quiz_answers.refined_history.
+  // ------------------------------------------------------------
+  const { tier, isExpired } = await getEffectiveTier(supabase, user.id);
+  const refineLimit = isExpired ? 0 : REFINE_LIMITS[tier];
+
+  // Start of the current UTC month (consistent with /api/usage period).
+  const now = new Date();
+  const periodStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+  const periodStartIso = `${periodStart}T00:00:00.000Z`;
+
+  const { data: allRoadmaps } = await supabase
+    .from('roadmaps')
+    .select('quiz_answers')
+    .eq('user_id', user.id);
+
+  let refinesThisPeriod = 0;
+  for (const r of allRoadmaps ?? []) {
+    const history = ((r.quiz_answers as { refined_history?: unknown })?.refined_history ?? []) as unknown[];
+    for (const ts of history) {
+      if (typeof ts === 'string' && ts >= periodStartIso) refinesThisPeriod += 1;
+    }
+  }
+
+  if (refinesThisPeriod >= refineLimit) {
+    return Response.json(
+      {
+        error: 'refine_limit_reached',
+        kind: 'refine',
+        tier,
+        isExpired,
+        limit: refineLimit,
+        used: refinesThisPeriod,
+        period: periodStart,
+      },
+      { status: 429 }
+    );
+  }
 
   // Pull the last 30 chat messages for this roadmap — gives the AI the
   // evolution context the user has shared over time.
@@ -280,13 +324,19 @@ Génère la roadmap rafraîchie maintenant, en tenant compte de cette évolution
 
           // Merge: keep original quiz_answers but overlay the new context as
           // a `refined_*` sub-object so we keep a trail of evolution for
-          // future refines.
+          // future refines. `refined_history` is the source of truth for
+          // the per-month quota check above (array of ISO timestamps).
+          const refineTimestamp = new Date().toISOString();
+          const previousHistory = Array.isArray(originalAnswers.refined_history)
+            ? originalAnswers.refined_history.filter((x): x is string => typeof x === 'string')
+            : [];
           const mergedAnswers = {
             ...originalAnswers,
-            refined_at: new Date().toISOString(),
+            refined_at: refineTimestamp,
             refined_changes: changes,
             refined_currentIdea: currentIdea,
             refined_blocker: blocker,
+            refined_history: [...previousHistory, refineTimestamp],
           };
 
           const { error: updateErr } = await supabase

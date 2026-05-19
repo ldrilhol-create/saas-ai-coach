@@ -21,6 +21,23 @@ export const TIER_LIMITS: Record<Tier, TierLimits> = {
   premium: { messagesPerMonth: 600, roadmapsPerMonth: 20 },
 };
 
+/**
+ * Refine (update existing roadmap) quotas. Refines are SEPARATE from
+ * roadmaps because they don't create a new project — they evolve an
+ * existing one. We cap them anyway to avoid abuse: a trial user could
+ * otherwise burn ~$1-2 in Claude tokens by spamming refines for free.
+ *
+ * Stored as a jsonb array `refined_history: [iso_timestamp, ...]` inside
+ * each roadmap's `quiz_answers`. We aggregate across all roadmaps for
+ * the user and count entries in the current calendar month.
+ */
+export const REFINE_LIMITS: Record<Tier, number> = {
+  trial:   3,
+  starter: 10,
+  pro:     30,
+  premium: 100, // functionally unlimited; high cap detects abuse only
+};
+
 // Model mapping — Sonnet on Trial/Starter (cheap acquisition + entry volume),
 // Opus on Pro/Premium (the premium model that justifies the upgrade).
 // Narrative: "Pro unlocks Claude Opus, the most advanced model."

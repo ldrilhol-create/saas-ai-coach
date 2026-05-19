@@ -28,7 +28,7 @@ type Usage = {
 };
 
 type LimitHit = {
-  kind: 'message' | 'roadmap';
+  kind: 'message' | 'roadmap' | 'refine';
   limit: number;
   tier: Tier;
   isExpired: boolean;
@@ -571,6 +571,22 @@ export default function RoadmapPage() {
         }),
       });
 
+      // Refine quota hit — show the same upgrade modal as messages/roadmaps,
+      // with a "refine" kind so the copy can be tailored.
+      if (res.status === 429) {
+        const data = await res.json().catch(() => ({}));
+        setLimitHit({
+          kind: 'refine',
+          limit: typeof data?.limit === 'number' ? data.limit : 3,
+          tier: (['trial', 'starter', 'pro', 'premium'] as const).includes(data?.tier)
+            ? (data.tier as Tier)
+            : 'trial',
+          isExpired: data?.isExpired === true,
+        });
+        setStreaming(false);
+        return;
+      }
+
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || `HTTP ${res.status}`);
@@ -1077,15 +1093,21 @@ export default function RoadmapPage() {
                 ? t.roadmap.trialExpiredTitle
                 : limitHit.kind === 'message'
                   ? t.roadmap.limitReachedMessagesTitle
-                  : t.roadmap.limitReachedRoadmapsTitle}
+                  : limitHit.kind === 'refine'
+                    ? t.roadmap.refineLimitTitle
+                    : t.roadmap.limitReachedRoadmapsTitle}
             </h2>
             <p className="text-gray-300 text-sm leading-relaxed mb-5">
               {limitHit.isExpired
                 ? t.roadmap.trialExpiredBody
-                : (limitHit.kind === 'message'
-                    ? t.roadmap.limitReachedMessagesBody
-                    : t.roadmap.limitReachedRoadmapsBody
-                  ).replace('{limit}', String(limitHit.limit))}
+                : limitHit.kind === 'refine'
+                  ? t.roadmap.refineLimitBody
+                      .replace('{limit}', String(limitHit.limit))
+                      .replace('{tier}', limitHit.tier)
+                  : (limitHit.kind === 'message'
+                      ? t.roadmap.limitReachedMessagesBody
+                      : t.roadmap.limitReachedRoadmapsBody
+                    ).replace('{limit}', String(limitHit.limit))}
             </p>
             <button
               type="button"
