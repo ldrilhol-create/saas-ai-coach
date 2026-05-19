@@ -265,6 +265,182 @@ export function renderInactivity(opts: {
   };
 }
 
+// ---------------- Daily task (chaque matin) ----------------
+
+export function renderDailyTask(opts: {
+  userId: string;
+  locale: Locale;
+  taskTitle: string;
+  phaseName: string;
+  currentStreak: number;
+}): RenderedEmail {
+  const { userId, locale, taskTitle, phaseName, currentStreak } = opts;
+  const unsubscribeUrl = buildUnsubscribeUrl(userId);
+  const ctaUrl = 'https://businesscoachai.app/roadmap';
+  const streakBadge = currentStreak > 0
+    ? (locale === 'fr'
+        ? `🔥 ${currentStreak} jours d'affilée — continue !`
+        : `🔥 ${currentStreak}-day streak — keep it going!`)
+    : (locale === 'fr'
+        ? `Tu peux démarrer une série dès aujourd'hui 🌱`
+        : `You can start a streak today 🌱`);
+
+  if (locale === 'fr') {
+    const body = `
+      <h1 style="margin:0 0 14px 0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">Ta tâche du jour 🎯</h1>
+      <p style="margin:0 0 14px 0;font-size:15px;line-height:1.6;color:#d1d5db;">
+        Une seule chose à faire aujourd'hui pour avancer&nbsp;:
+      </p>
+      <div style="margin:18px 0;padding:18px 20px;background:rgba(59,130,246,0.1);border-left:4px solid #3b82f6;border-radius:8px;">
+        ${phaseName ? `<p style="margin:0 0 6px 0;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;">${escapeHtml(phaseName)}</p>` : ''}
+        <p style="margin:0;font-size:17px;font-weight:600;color:#fff;line-height:1.4;">${escapeHtml(taskTitle)}</p>
+      </div>
+      <p style="margin:0 0 6px 0;font-size:14px;line-height:1.6;color:#9ca3af;">
+        ${escapeHtml(streakBadge)}
+      </p>`;
+    const html = layout({
+      preheader: `Ta tâche du jour : ${taskTitle}`,
+      bodyHtml: body,
+      cta: { label: "Ouvrir ma roadmap", href: ctaUrl },
+      unsubscribeUrl,
+      locale: 'fr',
+    });
+    return {
+      subject: `🎯 Ta tâche du jour : ${truncate(taskTitle, 60)}`,
+      html,
+      text: htmlToText(body) + `\n\nOuvrir ma roadmap : ${ctaUrl}`,
+    };
+  }
+
+  const body = `
+    <h1 style="margin:0 0 14px 0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">Today's task 🎯</h1>
+    <p style="margin:0 0 14px 0;font-size:15px;line-height:1.6;color:#d1d5db;">
+      One thing to move forward today:
+    </p>
+    <div style="margin:18px 0;padding:18px 20px;background:rgba(59,130,246,0.1);border-left:4px solid #3b82f6;border-radius:8px;">
+      ${phaseName ? `<p style="margin:0 0 6px 0;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;">${escapeHtml(phaseName)}</p>` : ''}
+      <p style="margin:0;font-size:17px;font-weight:600;color:#fff;line-height:1.4;">${escapeHtml(taskTitle)}</p>
+    </div>
+    <p style="margin:0 0 6px 0;font-size:14px;line-height:1.6;color:#9ca3af;">
+      ${escapeHtml(streakBadge)}
+    </p>`;
+  const html = layout({
+    preheader: `Today's task: ${taskTitle}`,
+    bodyHtml: body,
+    cta: { label: 'Open my roadmap', href: ctaUrl },
+    unsubscribeUrl,
+    locale: 'en',
+  });
+  return {
+    subject: `🎯 Today's task: ${truncate(taskTitle, 60)}`,
+    html,
+    text: htmlToText(body) + `\n\nOpen my roadmap: ${ctaUrl}`,
+  };
+}
+
+// ---------------- Weekly recap (dimanche soir) ----------------
+
+export function renderWeeklyRecap(opts: {
+  userId: string;
+  locale: Locale;
+  tasksDoneThisWeek: number;
+  currentStreak: number;
+  nextTaskTitle: string | null;
+}): RenderedEmail {
+  const { userId, locale, tasksDoneThisWeek, currentStreak, nextTaskTitle } = opts;
+  const unsubscribeUrl = buildUnsubscribeUrl(userId);
+  const ctaUrl = 'https://businesscoachai.app/roadmap';
+
+  if (locale === 'fr') {
+    const headline = tasksDoneThisWeek === 0
+      ? "Pas de tâches cochées cette semaine. On remet ça lundi ?"
+      : tasksDoneThisWeek === 1
+        ? `Tu as accompli 1 tâche cette semaine. Un pas, c'est mieux que zéro 👏`
+        : `Tu as accompli ${tasksDoneThisWeek} tâches cette semaine 👏`;
+    const body = `
+      <h1 style="margin:0 0 14px 0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">Ta semaine en bref</h1>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#d1d5db;">
+        ${escapeHtml(headline)}
+      </p>
+      <div style="margin:14px 0;padding:16px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="padding:6px 0;font-size:14px;color:#9ca3af;">Tâches cochées</td>
+            <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:600;text-align:right;">${tasksDoneThisWeek}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:14px;color:#9ca3af;">Série en cours</td>
+            <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:600;text-align:right;">${currentStreak > 0 ? `🔥 ${currentStreak} jours` : '—'}</td>
+          </tr>
+        </table>
+      </div>
+      ${nextTaskTitle ? `
+      <p style="margin:14px 0 6px 0;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;">Focus pour la semaine prochaine</p>
+      <p style="margin:0 0 8px 0;font-size:15px;font-weight:600;color:#fff;line-height:1.4;">${escapeHtml(nextTaskTitle)}</p>
+      ` : ''}`;
+    const html = layout({
+      preheader: headline,
+      bodyHtml: body,
+      cta: { label: 'Ouvrir ma roadmap', href: ctaUrl },
+      unsubscribeUrl,
+      locale: 'fr',
+    });
+    return {
+      subject: tasksDoneThisWeek > 0
+        ? `Bilan de la semaine : ${tasksDoneThisWeek} tâche${tasksDoneThisWeek > 1 ? 's' : ''} accomplie${tasksDoneThisWeek > 1 ? 's' : ''} 👏`
+        : 'Ta semaine sur Business Coach AI',
+      html,
+      text: htmlToText(body) + `\n\nOuvrir ma roadmap : ${ctaUrl}`,
+    };
+  }
+
+  const headline = tasksDoneThisWeek === 0
+    ? "No tasks checked off this week. Let's bounce back Monday?"
+    : tasksDoneThisWeek === 1
+      ? `You completed 1 task this week. One step beats zero 👏`
+      : `You completed ${tasksDoneThisWeek} tasks this week 👏`;
+  const body = `
+    <h1 style="margin:0 0 14px 0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">Your week, in short</h1>
+    <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#d1d5db;">
+      ${escapeHtml(headline)}
+    </p>
+    <div style="margin:14px 0;padding:16px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:6px 0;font-size:14px;color:#9ca3af;">Tasks checked off</td>
+          <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:600;text-align:right;">${tasksDoneThisWeek}</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0;font-size:14px;color:#9ca3af;">Current streak</td>
+          <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:600;text-align:right;">${currentStreak > 0 ? `🔥 ${currentStreak} days` : '—'}</td>
+        </tr>
+      </table>
+    </div>
+    ${nextTaskTitle ? `
+    <p style="margin:14px 0 6px 0;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;">Focus for next week</p>
+    <p style="margin:0 0 8px 0;font-size:15px;font-weight:600;color:#fff;line-height:1.4;">${escapeHtml(nextTaskTitle)}</p>
+    ` : ''}`;
+  const html = layout({
+    preheader: headline,
+    bodyHtml: body,
+    cta: { label: 'Open my roadmap', href: ctaUrl },
+    unsubscribeUrl,
+    locale: 'en',
+  });
+  return {
+    subject: tasksDoneThisWeek > 0
+      ? `Week recap: ${tasksDoneThisWeek} task${tasksDoneThisWeek > 1 ? 's' : ''} completed 👏`
+      : 'Your week on Business Coach AI',
+    html,
+    text: htmlToText(body) + `\n\nOpen my roadmap: ${ctaUrl}`,
+  };
+}
+
+function truncate(s: string, n: number): string {
+  if (s.length <= n) return s;
+  return s.slice(0, n - 1).trimEnd() + '…';
+}
+
 // ---------------- Trial ending (J-2 / J-1) ----------------
 
 export function renderTrialEnding(opts: {

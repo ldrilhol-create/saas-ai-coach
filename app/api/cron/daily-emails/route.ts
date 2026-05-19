@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { sendAndLog, type EmailType } from '@/lib/emails/send';
-import { renderInactivity, renderTrialEnding } from '@/lib/emails/templates';
+import { renderInactivity, renderTrialEnding, renderDailyTask, renderWeeklyRecap } from '@/lib/emails/templates';
+import { getStreakForUser, getNextTaskForUser, getWeeklyTaskCount } from '@/lib/streak';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,6 +66,8 @@ export async function GET(request: Request) {
     inactivity_2: { attempted: 0, sent: 0, skipped: 0 },
     trial_d2: { attempted: 0, sent: 0, skipped: 0 },
     trial_d1: { attempted: 0, sent: 0, skipped: 0 },
+    daily_task: { attempted: 0, sent: 0, skipped: 0 },
+    weekly_recap: { attempted: 0, sent: 0, skipped: 0 },
     errors: [] as string[],
   };
 
@@ -75,6 +78,14 @@ export async function GET(request: Request) {
   // -------- 2) Inactivity reminders --------
   await runInactivity(admin, INACTIVITY_DAYS_1, false, results);
   await runInactivity(admin, INACTIVITY_DAYS_2, true, results);
+
+  // -------- 3) Daily-habit emails (run every day) --------
+  await runDailyTask(admin, results);
+
+  // -------- 4) Weekly recap (Sundays only — UTC) --------
+  if (new Date().getUTCDay() === 0) {
+    await runWeeklyRecap(admin, results);
+  }
 
   return Response.json({ ok: true, ranAt: new Date().toISOString(), results });
 }
@@ -217,7 +228,10 @@ async function runInactivity(
     }
 
     // Look up the user's active roadmap and find the next uncompleted task.
-    const nextTask = await getNextTaskForUser(admin, row.user_id);
+    // renderInactivity only needs the task title, so extract it from the
+    // richer struct returned by getNextTaskForUser.
+    const nextTaskInfo = await getNextTaskForUser(admin, row.user_id);
+    const nextTask = nextTaskInfo?.title ?? null;
 
     const daysSince = Math.round((now - new Date(row.last_activity_at).getTime()) / dayMs);
     const { subject, html, text } = renderInactivity({
@@ -232,6 +246,145 @@ async function runInactivity(
       to: row.email,
       userId: row.user_id,
       type: emailType,
+      subject,
+      html,
+      text,
+    });
+    if (r.sent) bucket.sent += 1;
+    else bucket.skipped += 1;
+  }
+}
+
+// ============================================================
+// Daily-task email — sent every morning to active users who have a
+// roadmap with at least one uncompleted task AND haven't already
+// completed a task today (no point pinging users who are already on it).
+// ============================================================
+
+async function runDailyTask(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  results: ReturnType<typeof emptyResults>['_inferred']
+): Promise<void> {
+  const bucket = results.daily_task;
+
+  // Eligible users: non-expired subscription, not opted out. We start from
+  // user_subscriptions because that's already filtered to "real users".
+  const { data: subs, error } = await admin
+    .from('user_subscriptions')
+    .select('user_id, tier, current_period_end, email_optout')
+    .eq('email_optout', false)
+    .returns<SubRow[]>();
+  if (error) {
+    results.errors.push(`daily_task_query:${error.message}`);
+    return;
+  }
+  if (!subs || subs.length === 0) return;
+
+  const now = Date.now();
+  const userIds: string[] = [];
+  for (const sub of subs) {
+    // Skip expired trials — those get the trial-ending emails instead.
+    if (sub.tier === 'trial' && sub.current_period_end && new Date(sub.current_period_end).getTime() < now) continue;
+    userIds.push(sub.user_id);
+  }
+  if (userIds.length === 0) return;
+
+  const emailsByUser = await fetchEmails(admin, userIds);
+
+  for (const userId of userIds) {
+    bucket.attempted += 1;
+    const email = emailsByUser.get(userId);
+    if (!email) { bucket.skipped += 1; continue; }
+
+    // Find their next task. If none → skip (welcome email handles users
+    // who haven't generated a roadmap yet).
+    const nextTask = await getNextTaskForUser(admin, userId);
+    if (!nextTask) { bucket.skipped += 1; continue; }
+
+    // Skip if user already completed a task today — they're already
+    // engaged, no need to nudge.
+    const streak = await getStreakForUser(admin, userId);
+    if (streak.todayDone) { bucket.skipped += 1; continue; }
+
+    const { subject, html, text } = renderDailyTask({
+      userId,
+      locale: 'fr',
+      taskTitle: nextTask.title,
+      phaseName: nextTask.phaseName,
+      currentStreak: streak.currentStreak,
+    });
+
+    const r = await sendAndLog({
+      to: email,
+      userId,
+      type: 'daily_task',
+      subject,
+      html,
+      text,
+    });
+    if (r.sent) bucket.sent += 1;
+    else bucket.skipped += 1;
+  }
+}
+
+// ============================================================
+// Weekly recap — Sunday only. Personalized stats + next focus.
+// ============================================================
+
+async function runWeeklyRecap(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  results: ReturnType<typeof emptyResults>['_inferred']
+): Promise<void> {
+  const bucket = results.weekly_recap;
+
+  const { data: subs, error } = await admin
+    .from('user_subscriptions')
+    .select('user_id, tier, current_period_end, email_optout')
+    .eq('email_optout', false)
+    .returns<SubRow[]>();
+  if (error) {
+    results.errors.push(`weekly_recap_query:${error.message}`);
+    return;
+  }
+  if (!subs || subs.length === 0) return;
+
+  const now = Date.now();
+  const userIds: string[] = [];
+  for (const sub of subs) {
+    if (sub.tier === 'trial' && sub.current_period_end && new Date(sub.current_period_end).getTime() < now) continue;
+    userIds.push(sub.user_id);
+  }
+  if (userIds.length === 0) return;
+
+  const emailsByUser = await fetchEmails(admin, userIds);
+
+  for (const userId of userIds) {
+    bucket.attempted += 1;
+    const email = emailsByUser.get(userId);
+    if (!email) { bucket.skipped += 1; continue; }
+
+    const [tasksDone, streak, nextTask] = await Promise.all([
+      getWeeklyTaskCount(admin, userId),
+      getStreakForUser(admin, userId),
+      getNextTaskForUser(admin, userId),
+    ]);
+
+    // If the user has done zero tasks AND has no roadmap yet, skip
+    // (welcome / inactivity emails are more appropriate for that state).
+    if (tasksDone === 0 && !nextTask) { bucket.skipped += 1; continue; }
+
+    const { subject, html, text } = renderWeeklyRecap({
+      userId,
+      locale: 'fr',
+      tasksDoneThisWeek: tasksDone,
+      currentStreak: streak.currentStreak,
+      nextTaskTitle: nextTask?.title ?? null,
+    });
+
+    const r = await sendAndLog({
+      to: email,
+      userId,
+      type: 'weekly_recap',
       subject,
       html,
       text,
@@ -276,39 +429,6 @@ async function fetchSubsByUser(
   return new Map((data ?? []).map((s) => [s.user_id, s]));
 }
 
-async function getNextTaskForUser(
-  admin: ReturnType<typeof getSupabaseAdmin>,
-  userId: string
-): Promise<string | null> {
-  // Most recent roadmap for the user
-  const { data: roadmaps } = await admin
-    .from('roadmaps')
-    .select('id, data, updated_at')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .returns<RoadmapRow[]>();
-  const rm = roadmaps?.[0];
-  if (!rm?.data?.phases) return null;
-
-  const { data: completions } = await admin
-    .from('task_completions')
-    .select('phase_idx, task_idx')
-    .eq('roadmap_id', rm.id);
-  const done = new Set((completions ?? []).map((c) => `${c.phase_idx}-${c.task_idx}`));
-
-  for (let p = 0; p < rm.data.phases.length; p++) {
-    const phase = rm.data.phases[p];
-    const tasks = phase?.tasks ?? [];
-    for (let t = 0; t < tasks.length; t++) {
-      if (!done.has(`${p}-${t}`)) {
-        return tasks[t]?.title ?? null;
-      }
-    }
-  }
-  return null;
-}
-
 // Helper to keep TS happy on the results object (we want the per-bucket type).
 function emptyResults() {
   return {
@@ -317,6 +437,8 @@ function emptyResults() {
       inactivity_2: { attempted: 0, sent: 0, skipped: 0 },
       trial_d2: { attempted: 0, sent: 0, skipped: 0 },
       trial_d1: { attempted: 0, sent: 0, skipped: 0 },
+      daily_task: { attempted: 0, sent: 0, skipped: 0 },
+      weekly_recap: { attempted: 0, sent: 0, skipped: 0 },
       errors: [] as string[],
     },
   };

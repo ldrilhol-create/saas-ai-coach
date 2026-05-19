@@ -6,7 +6,9 @@ export type EmailType =
   | 'inactivity_1'
   | 'inactivity_2'
   | 'trial_d2'
-  | 'trial_d1';
+  | 'trial_d1'
+  | 'daily_task'
+  | 'weekly_recap';
 
 type SendInput = {
   to: string;

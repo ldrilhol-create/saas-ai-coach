@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 import { UserAvatar } from '@/app/components/UserAvatar';
+import { StreakBadge } from '@/app/components/StreakBadge';
 
 type Tier = 'trial' | 'starter' | 'pro' | 'premium';
 type Usage = {
@@ -196,6 +197,11 @@ export default function AccountPage() {
             </div>
           </div>
         </section>
+
+        {/* Streak widget — large, prominent. Visible regardless of tier:
+            the gamification effect works for trial users too (helps them
+            convert into engaged habit-formers before their trial ends). */}
+        <StreakBadge size="lg" />
 
         {usage && (
           <section className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-sm">

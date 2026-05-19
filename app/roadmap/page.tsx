@@ -7,6 +7,8 @@ import posthog from 'posthog-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { CoachAvatar } from '@/app/components/CoachAvatar';
 import { UserAvatar } from '@/app/components/UserAvatar';
+import { StreakBadge } from '@/app/components/StreakBadge';
+import { DailyTaskBanner } from '@/app/components/DailyTaskBanner';
 import { useLang, LanguageSwitcher } from '@/lib/i18n';
 
 type Task = { title?: string; duration?: string };
@@ -670,6 +672,8 @@ export default function RoadmapPage() {
               AI
             </div>
             <span className="font-bold text-lg tracking-tight hidden md:inline">{t.roadmap.headerTitle}</span>
+            {/* Streak chip — only visible when streak > 0, compact in header */}
+            <StreakBadge size="sm" />
 
             {roadmaps.length > 0 && (
               <div className="relative">
@@ -861,6 +865,13 @@ export default function RoadmapPage() {
           </div>
         </div>
       </header>
+
+      {/* Daily task banner — appears once per day with the user's next
+          uncompleted task. Dismissible. Hidden during initial load / errors
+          to avoid layout flash. */}
+      {!showInitialLoading && !showError && roadmap && (
+        <DailyTaskBanner />
+      )}
 
       {showInitialLoading ? (
         <div className="relative z-10 flex flex-col items-center justify-center gap-4 px-4 py-32">
