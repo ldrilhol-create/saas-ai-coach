@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getStripeClient } from '@/lib/stripe/client';
-import { getPriceIdForPlan, isPaidTier } from '@/lib/stripe/plans';
+import { getPriceIdForPlan, isPaidTier, isBillingCycle, type BillingCycle } from '@/lib/stripe/plans';
 
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -9,9 +9,9 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Non authentifié' }, { status: 401 });
   }
 
-  let body: { plan?: unknown };
+  let body: { plan?: unknown; cycle?: unknown };
   try {
-    body = (await request.json()) as { plan?: unknown };
+    body = (await request.json()) as { plan?: unknown; cycle?: unknown };
   } catch {
     return Response.json({ error: 'JSON invalide' }, { status: 400 });
   }
@@ -20,6 +20,11 @@ export async function POST(request: Request) {
   if (!isPaidTier(plan)) {
     return Response.json({ error: 'plan invalide (attendu: starter / pro / premium)' }, { status: 400 });
   }
+
+  // Billing cycle: monthly (default) or yearly. Yearly = ~17% discount
+  // (2 months free) and locks the user in for 12 months.
+  const cycleStr = typeof body.cycle === 'string' ? body.cycle : 'monthly';
+  const cycle: BillingCycle = isBillingCycle(cycleStr) ? cycleStr : 'monthly';
 
   // Reuse an existing Stripe customer id if the user already has one
   // (avoids creating duplicate customers on repeat checkouts).
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: getPriceIdForPlan(plan),
+          price: getPriceIdForPlan(plan, cycle),
           quantity: 1,
         },
       ],
@@ -52,9 +57,9 @@ export async function POST(request: Request) {
       // Map the Stripe customer back to our user.id via metadata.
       // We also set it on the subscription so future webhooks include it.
       client_reference_id: user.id,
-      metadata: { supabase_user_id: user.id, plan },
+      metadata: { supabase_user_id: user.id, plan, cycle },
       subscription_data: {
-        metadata: { supabase_user_id: user.id, plan },
+        metadata: { supabase_user_id: user.id, plan, cycle },
       },
       allow_promotion_codes: true,
       success_url: `${origin}/account?checkout=success`,
