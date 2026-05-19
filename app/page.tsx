@@ -267,7 +267,13 @@ export default function Home() {
                 {t.pricing.cycleMonthly}
               </button>
               <button
-                onClick={() => setCycle('yearly')}
+                onClick={() => {
+                  setCycle('yearly');
+                  // Track intent to consider yearly — engagement signal stronger than just viewing
+                  if (cycle !== 'yearly' && posthog.__loaded) {
+                    posthog.capture('pricing_toggle_yearly', { source: 'landing_pricing' });
+                  }
+                }}
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                   cycle === 'yearly'
                     ? 'bg-white text-gray-900 shadow-sm'

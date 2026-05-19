@@ -82,6 +82,14 @@ export default function RoadmapPage() {
   const canExportPdf = usage?.tier === 'pro' || usage?.tier === 'premium';
 
   const handleExportPdf = () => {
+    // Track every click (with whether the user has access) — this gives us
+    // both a "PDF feature interest" signal AND a "paywall hit" signal.
+    if (posthog.__loaded) {
+      posthog.capture('pdf_export_clicked', {
+        tier: usage?.tier ?? 'unknown',
+        has_access: canExportPdf,
+      });
+    }
     if (!canExportPdf) {
       setPdfLocked(true);
       return;
@@ -199,7 +207,17 @@ export default function RoadmapPage() {
   const refreshUsage = useCallback(async () => {
     try {
       const res = await fetch('/api/usage', { cache: 'no-store' });
-      if (res.ok) setUsage((await res.json()) as Usage);
+      if (res.ok) {
+        const data = (await res.json()) as Usage;
+        setUsage(data);
+        // Keep PostHog in sync with the user's current tier so all
+        // events/recordings can be segmented by tier and group analytics work.
+        if (posthog.__loaded && data.tier) {
+          posthog.group('subscription_tier', data.tier);
+          // Update the user property too (lighter than full identify call)
+          posthog.setPersonProperties({ tier: data.tier });
+        }
+      }
     } catch {
       // non-fatal — UI just won't show counters
     }
@@ -385,6 +403,54 @@ export default function RoadmapPage() {
           task_idx: taskIdx,
         });
       if (insErr) console.error('Toggle on failed:', insErr);
+
+      // ---- PostHog: granular engagement tracking ----
+      // task_completed → fires every time the user checks something off,
+      // enriched with context to allow segmentation (which phase, which
+      // task, how long since signup).
+      if (posthog.__loaded) {
+        const phase = roadmap?.phases?.[phaseIdx];
+        const task = phase?.tasks?.[taskIdx];
+        posthog.capture('task_completed', {
+          phase_idx: phaseIdx,
+          task_idx: taskIdx,
+          phase_name: phase?.name ?? null,
+          task_title: task?.title ?? null,
+        });
+
+        // phase_completed → fires only when this completion closes out the
+        // entire phase. Big retention milestone (the "wow, I finished a chunk"
+        // moment). Use the next snapshot of completions to detect.
+        const totalTasksInPhase = phase?.tasks?.length ?? 0;
+        if (totalTasksInPhase > 0) {
+          // Count completions in this phase including the one we just added.
+          let doneInPhase = 1; // +1 for the toggle we just performed
+          for (let i = 0; i < totalTasksInPhase; i++) {
+            if (i !== taskIdx && completions.has(taskKey(phaseIdx, i))) doneInPhase += 1;
+          }
+          if (doneInPhase === totalTasksInPhase) {
+            posthog.capture('phase_completed', {
+              phase_idx: phaseIdx,
+              phase_name: phase?.name ?? null,
+              tasks_in_phase: totalTasksInPhase,
+            });
+          }
+        }
+
+        // streak_milestone → fire when the streak hits 3, 7, 14, 30, 60, 100.
+        // We re-fetch /api/streak to get the current value (cheap, server reads
+        // it fast from task_completions). Async/fire-and-forget.
+        const MILESTONES = [3, 7, 14, 30, 60, 100];
+        fetch('/api/streak', { cache: 'no-store' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            const streak = data?.streak?.currentStreak as number | undefined;
+            if (streak && MILESTONES.includes(streak)) {
+              posthog.capture('streak_milestone', { streak });
+            }
+          })
+          .catch(() => { /* non-fatal */ });
+      }
     }
   };
 

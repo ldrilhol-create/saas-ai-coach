@@ -156,7 +156,12 @@ export default function UpgradePage() {
                 {t.pricing.cycleMonthly}
               </button>
               <button
-                onClick={() => setCycle('yearly')}
+                onClick={() => {
+                  setCycle('yearly');
+                  if (cycle !== 'yearly' && posthog.__loaded) {
+                    posthog.capture('pricing_toggle_yearly', { source: 'upgrade_page' });
+                  }
+                }}
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                   cycle === 'yearly'
                     ? 'bg-white text-gray-900 shadow-sm'

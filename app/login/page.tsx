@@ -37,8 +37,19 @@ function LoginInner() {
         // tie future events back to this account across sessions).
         // The __loaded guard avoids a silent no-op if the SDK hasn't booted yet.
         if (data.user && posthog.__loaded) {
-          posthog.identify(data.user.id, { email });
-          posthog.capture('signup_completed');
+          // Rich user properties for segmentation. We only have minimal info
+          // at signup time — the Stripe webhook will later add tier/cycle.
+          const locale = t.login.signinTitle.includes('Bon retour') ? 'fr' : 'en';
+          posthog.identify(data.user.id, {
+            email,
+            signup_date: new Date().toISOString(),
+            tier: 'trial',
+            locale,
+          });
+          // New users start in the 'trial' group so cohort splits work
+          // immediately, even before they upgrade.
+          posthog.group('subscription_tier', 'trial');
+          posthog.capture('signup_completed', { locale });
         }
         // Fire-and-forget welcome email. Requires a session (server-side
         // auth.getUser() check in the route), so only attempt when one exists.
@@ -71,8 +82,11 @@ function LoginInner() {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
         // Identify the user in PostHog so subsequent events tie back to them.
+        // Locale is the only safe property we know at this point — tier comes
+        // from the server (fetched via /api/usage after redirect).
         if (data.user && posthog.__loaded) {
-          posthog.identify(data.user.id, { email });
+          const locale = t.login.signinTitle.includes('Bon retour') ? 'fr' : 'en';
+          posthog.identify(data.user.id, { email, locale });
         }
       }
       router.push(next);

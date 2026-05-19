@@ -8,6 +8,19 @@ type Locale = 'fr' | 'en';
 
 type RenderedEmail = { subject: string; html: string; text: string };
 
+/**
+ * Append PostHog/UTM tracking params to email CTAs so we can measure which
+ * email types drive what action. Captured automatically by PostHog client
+ * via $current_url, and visible in Web Analytics → UTMs.
+ */
+function withTracking(url: string, campaign: string): string {
+  const u = new URL(url);
+  u.searchParams.set('utm_source', 'email');
+  u.searchParams.set('utm_medium', 'transactional');
+  u.searchParams.set('utm_campaign', campaign);
+  return u.toString();
+}
+
 // ---------------- Shared layout ----------------
 
 const BRAND_COLOR = '#3b82f6'; // blue-500 — matches the app
@@ -123,14 +136,14 @@ export function renderWelcome(opts: { userId: string; locale: Locale }): Rendere
     const html = layout({
       preheader: 'Ton compte est créé. Ta prochaine étape : générer ta roadmap.',
       bodyHtml: body,
-      cta: { label: 'Faire mon quiz maintenant', href: 'https://businesscoachai.app/quiz' },
+      cta: { label: 'Faire mon quiz maintenant', href: withTracking('https://businesscoachai.app/quiz', 'welcome') },
       unsubscribeUrl,
       locale: 'fr',
     });
     return {
       subject: 'Bienvenue sur Business Coach AI — ta prochaine étape',
       html,
-      text: htmlToText(body) + '\n\nFaire mon quiz : https://businesscoachai.app/quiz',
+      text: htmlToText(body) + `\n\nFaire mon quiz : ${withTracking('https://businesscoachai.app/quiz', 'welcome')}`,
     };
   }
 
@@ -145,14 +158,14 @@ export function renderWelcome(opts: { userId: string; locale: Locale }): Rendere
   const html = layout({
     preheader: "Your account is live. Next step: generate your roadmap.",
     bodyHtml: body,
-    cta: { label: 'Take the quiz now', href: 'https://businesscoachai.app/quiz' },
+    cta: { label: 'Take the quiz now', href: withTracking('https://businesscoachai.app/quiz', 'welcome') },
     unsubscribeUrl,
     locale: 'en',
   });
   return {
     subject: 'Welcome to Business Coach AI — your next step',
     html,
-    text: htmlToText(body) + '\n\nTake the quiz: https://businesscoachai.app/quiz',
+    text: htmlToText(body) + `\n\nTake the quiz: ${withTracking('https://businesscoachai.app/quiz', 'welcome')}`,
   };
 }
 
@@ -168,10 +181,13 @@ export function renderInactivity(opts: {
   const { userId, locale, nextTask, daysSinceActivity, isSecondReminder } = opts;
   const unsubscribeUrl = buildUnsubscribeUrl(userId);
 
-  // CTA destination depends on whether the user has a roadmap
-  const ctaHref = nextTask
-    ? 'https://businesscoachai.app/roadmap'
-    : 'https://businesscoachai.app/quiz';
+  // CTA destination depends on whether the user has a roadmap. Each email
+  // type gets its own utm_campaign so we can split conversion by reminder #.
+  const campaign = isSecondReminder ? 'inactivity_2' : 'inactivity_1';
+  const ctaHref = withTracking(
+    nextTask ? 'https://businesscoachai.app/roadmap' : 'https://businesscoachai.app/quiz',
+    campaign
+  );
 
   if (locale === 'fr') {
     const ctaLabel = nextTask ? 'Reprendre ma roadmap' : 'Lancer mon quiz';
@@ -276,7 +292,7 @@ export function renderDailyTask(opts: {
 }): RenderedEmail {
   const { userId, locale, taskTitle, phaseName, currentStreak } = opts;
   const unsubscribeUrl = buildUnsubscribeUrl(userId);
-  const ctaUrl = 'https://businesscoachai.app/roadmap';
+  const ctaUrl = withTracking('https://businesscoachai.app/roadmap', 'daily_task');
   const streakBadge = currentStreak > 0
     ? (locale === 'fr'
         ? `🔥 ${currentStreak} jours d'affilée — continue !`
@@ -349,7 +365,7 @@ export function renderWeeklyRecap(opts: {
 }): RenderedEmail {
   const { userId, locale, tasksDoneThisWeek, currentStreak, nextTaskTitle } = opts;
   const unsubscribeUrl = buildUnsubscribeUrl(userId);
-  const ctaUrl = 'https://businesscoachai.app/roadmap';
+  const ctaUrl = withTracking('https://businesscoachai.app/roadmap', 'weekly_recap');
 
   if (locale === 'fr') {
     const headline = tasksDoneThisWeek === 0
@@ -450,7 +466,7 @@ export function renderTrialEnding(opts: {
 }): RenderedEmail {
   const { userId, locale, daysLeft } = opts;
   const unsubscribeUrl = buildUnsubscribeUrl(userId);
-  const upgradeUrl = 'https://businesscoachai.app/upgrade';
+  const upgradeUrl = withTracking('https://businesscoachai.app/upgrade', `trial_d${daysLeft}`);
 
   if (locale === 'fr') {
     const subject = daysLeft === 2

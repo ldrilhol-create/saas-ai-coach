@@ -2,6 +2,7 @@ import type Stripe from 'stripe';
 import { getStripeClient } from '@/lib/stripe/client';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { getTierForPriceId } from '@/lib/stripe/plans';
+import { captureServerEvent, setUserProperties } from '@/lib/posthog-server';
 
 // Webhook needs the raw body to verify the Stripe signature.
 // Disable any body parsing optimizations.
@@ -189,6 +190,12 @@ async function upsertSubscriptionFromStripe(userId: string, subscription: Stripe
     return;
   }
 
+  // Determine billing cycle from the price interval. Stripe stores it as
+  // 'month' or 'year' on the recurring price; we normalize to our own type.
+  const item = subscription.items.data[0];
+  const interval = item?.price.recurring?.interval;
+  const cycle: 'monthly' | 'yearly' = interval === 'year' ? 'yearly' : 'monthly';
+
   // `current_period_end` is on the subscription item in newer API versions.
   // Fall back across shapes for robustness.
   const periodEndUnix =
@@ -218,4 +225,38 @@ async function upsertSubscriptionFromStripe(userId: string, subscription: Stripe
       },
       { onConflict: 'user_id' }
     );
+
+  // ----------------------------------------------------------
+  // PostHog: ground-truth conversion event. Fires for new
+  // subscriptions AND renewals. The funnel checkout_started →
+  // subscription_completed gives us real CAC.
+  //
+  // Also enrich the user profile with the latest tier/cycle so
+  // every future event can be filtered by it.
+  // ----------------------------------------------------------
+  const amount = item?.price.unit_amount ?? 0;
+  const currency = item?.price.currency ?? 'eur';
+  await Promise.all([
+    captureServerEvent({
+      distinctId: userId,
+      event: 'subscription_completed',
+      properties: {
+        tier,
+        cycle,
+        amount: amount / 100, // Stripe returns cents
+        currency: currency.toUpperCase(),
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customerId,
+        status: subscription.status,
+      },
+      groups: { subscription_tier: tier },
+    }),
+    setUserProperties(userId, {
+      tier,
+      cycle,
+      stripe_customer_id: customerId,
+      current_period_end: periodEnd,
+      subscription_status: subscription.status,
+    }),
+  ]);
 }
